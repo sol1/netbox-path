@@ -1,0 +1,23 @@
+[
+    {
+      "data": {
+        "id": "a",
+        "label": "A"
+      }
+    },
+    {
+      "data": {
+        "id": "b",
+        "label": "B"
+      }
+    },
+    {
+      "data": {
+        "id": "d",
+        "label": "D"
+      }
+    },
+    {
+      "data": { "id": "ab", "source": "a", "target": "b" }
+    }
+]
