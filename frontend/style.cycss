@@ -18,3 +18,7 @@ edge {
     target-arrow-shape: triangle;
     curve-style: bezier;
 }
+edge:selected {
+    line-color: red;
+    target-arrow-color: red;
+}
