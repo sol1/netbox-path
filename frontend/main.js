@@ -56,14 +56,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  const initCytoscape = (elements, style) => {
+  const initCytoscape = (elements) => {
     cy = cytoscape({
       container: document.getElementById('cy'),
       layout: {
         name: 'grid'
       },
       elements: elements,
-      style: style
+      style: `
+        node {
+            background-color: teal;
+            label: data(label);
+            shape: roundrectangle;
+            width: 40;
+            height: 40;
+        }
+        node.has-been-selected {
+            background-color: black;
+        }
+        node:selected {
+            background-color: red;
+        }
+        edge {
+            width: 4;
+            line-color: tan;
+            target-arrow-color: tan;
+            target-arrow-shape: triangle;
+            curve-style: bezier;
+        }
+        edge:selected {
+            line-color: red;
+            target-arrow-color: red;
+        }
+      `
     })
 
     // Restore local state
@@ -97,19 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // If user clicks the destroy button, wipe local state and re-init from server data
     cy.on('destroy', () => {
       localStorage.removeItem('netbox-path')
-      initCytoscape(elements, style)
+      initCytoscape(elements)
     })
   }
 
   // Fetch starter elements then initialise Cytoscape
   var graphP = fetch('elements.json').then(obj => obj.json())
-  var styleP = fetch('style.cycss').then(obj => obj.text())
 
-  Promise.all([ graphP, styleP ]).then(promises => {
+  Promise.all([ graphP ]).then(promises => {
     elements = promises[0]
-    style    = promises[1]
-
-    initCytoscape(elements, style)
+    initCytoscape(elements)
 
     document.querySelector('#add-node').addEventListener('click', () => {
       var added = []
