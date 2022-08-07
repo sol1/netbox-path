@@ -1,7 +1,4 @@
-import django.core.validators
 from django.db import migrations, models
-import django.db.models.deletion
-import taggit.managers
 
 class Migration(migrations.Migration):
 

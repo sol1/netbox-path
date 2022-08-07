@@ -1,5 +1,6 @@
 from django.db import models
-from netbox.models import NetBoxModel
+from django.urls import reverse
+from utilities.querysets import RestrictedQuerySet
 
 class Path(models.Model):
     name = models.CharField(
@@ -12,6 +13,11 @@ class Path(models.Model):
     data = models.JSONField(
         blank=True
     )
+
+    objects = RestrictedQuerySet.as_manager()
+
+    def get_absolute_url(self):
+        return reverse('plugins:netbox_path:path', args=[self.pk])
 
     class Meta:
         verbose_name_plural = 'Paths'

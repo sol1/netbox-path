@@ -7,7 +7,7 @@ class NetBoxPathConfig(PluginConfig):
     version = '0.2'
     author = 'Andrew Foster'
     author_email = 'support@sol1.com.au'
-    base_url = 'paths'
+    base_url = 'netbox-path'
     required_settings = []
     min_version = '3.2.0'
     max_version = '3.2.99'
