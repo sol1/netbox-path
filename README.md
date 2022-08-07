@@ -12,14 +12,7 @@ The models are implemented using Cytoscape JS and built using Vite.
 * `npm install`
 * `npm run dev`
 
-## Building
+## Docker-based Netbox dev
 
-```
-cd frontend
-
-rm -rf dist/* &&
-    npm run build && \
-    cp dist/assets/index.*.js ../netbox_path/static/netbox_path/index.js && \
-    cp dist/assets/index.*.css ../netbox_path/static/netbox_path/index.css
-```
-
+* `cd frontend && ./build.sh`
+* `docker-compose down && docker-compose build --no-cache && docker-compose up --force-recreate`
