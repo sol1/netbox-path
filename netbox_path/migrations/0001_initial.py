@@ -1,4 +1,6 @@
+import django.core.serializers.json
 from django.db import migrations, models
+import taggit.managers
 
 class Migration(migrations.Migration):
 
@@ -12,11 +14,10 @@ class Migration(migrations.Migration):
                 ('created', models.DateField(auto_now_add=True, null=True)),
                 ('last_updated', models.DateTimeField(auto_now=True, null=True)),
                 ('name', models.CharField(max_length=64)),
-                ('description', models.CharField(blank=True, max_length=255)),
+                ('description', models.TextField(blank=True)),
                 ('data', models.JSONField(blank=True, null=True)),
+                ('custom_field_data', models.JSONField(blank=True, default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder)),
+                ('tags', taggit.managers.TaggableManager(through='extras.TaggedItem', to='extras.Tag')),
             ],
-            options={
-                'abstract': False,
-            },
         )
     ]

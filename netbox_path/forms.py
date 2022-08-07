@@ -5,4 +5,4 @@ class PathForm(NetBoxModelForm):
 
     class Meta:
         model = Path
-        fields = ('name', 'description')
+        fields = ('name', 'description', 'tags')
