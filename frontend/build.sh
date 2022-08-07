@@ -11,8 +11,6 @@ npm run build && \
   
   cp -v dist/assets/index.*.js  $LOCAL_DIR/index.js && \
   cp -v dist/assets/index.*.css $LOCAL_DIR/index.css && \
-  cp -v elements.json           $LOCAL_DIR/elements.json && \
 
   cp -v dist/assets/index.*.js  $PLUGIN_DIR/index.js && \
-  cp -v dist/assets/index.*.css $PLUGIN_DIR/index.css && \
-  cp -v elements.json           $PLUGIN_DIR/elements.json
+  cp -v dist/assets/index.*.css $PLUGIN_DIR/index.css

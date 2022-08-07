@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
                 ('last_updated', models.DateTimeField(auto_now=True, null=True)),
                 ('name', models.CharField(max_length=64)),
                 ('description', models.TextField(blank=True)),
-                ('data', models.JSONField(blank=True, null=True)),
+                ('graph', models.JSONField(blank=True, null=True)),
                 ('custom_field_data', models.JSONField(blank=True, default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder)),
                 ('tags', taggit.managers.TaggableManager(through='extras.TaggedItem', to='extras.Tag')),
             ],

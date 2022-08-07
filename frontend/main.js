@@ -1,7 +1,7 @@
 import './style.css'
 import cytoscape from 'cytoscape';
 
-var elements,
+var path,
     cy,
     cnt = 0
 
@@ -38,7 +38,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const saveState = () => {
-    window.localStorage.setItem('netbox-path', JSON.stringify(cy.json()))
+    fetch('http://localhost:8000/api/plugins/netbox-path/paths/1/', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        graph: cy.json(),
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => response.json())
+    .then((json) => console.log(json));
   }
 
   const emptyNodeSelect = () => {
@@ -55,13 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  const initCytoscape = (elements) => {
+  const initCytoscape = (graph) => {
+    // Init empty graph
     cy = cytoscape({
       container: document.getElementById('nbp-cy'),
       layout: {
         name: 'grid'
       },
-      elements: elements,
       style: `
         node {
             background-color: teal;
@@ -89,17 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       `
     })
-
-    // Restore local state
-    var savedState = window.localStorage.getItem('netbox-path')
-    try {
-      savedState = JSON.parse(savedState)
-      if (savedState) {
-        cy.json(savedState)
-      }
-    } catch(err) {
-      console.error(err)
-      savedState = null
+    
+    if (graph) {
+      // Overlay data from server
+      cy.json(graph)
     }
     
     cy.ready(() => {
@@ -121,22 +124,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // If user clicks the destroy button, wipe local state and re-init from server data
     cy.on('destroy', () => {
       localStorage.removeItem('netbox-path')
-      initCytoscape(elements)
+      initCytoscape(path?.graph)
     })
   }
 
-  if (typeof netboxPathDataUrl === 'undefined') {
-    console.log("Using local data")
-    var netboxPathDataUrl = 'elements.json' // local mockup
-  }
+  // Fetch data from server and initialise Cytoscape
+  // var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
+  var fetchPath = fetch('http://localhost:8000/api/plugins/netbox-path/paths/1/').then(obj => obj.json())
 
-  // Fetch starter elements then initialise Cytoscape
-  var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
-  // var graphP = fetch('http://localhost:8000/static/netbox_path/elements.json').then(obj => obj.json())
-
-  Promise.all([ graphP ]).then(promises => {
-    elements = promises[0]
-    initCytoscape(elements)
+  Promise.all([ fetchPath ]).then(promises => {
+    path = promises[0]
+    initCytoscape(path.graph)
 
     document.querySelector('#nbp-add-node').addEventListener('click', () => {
       var added = []

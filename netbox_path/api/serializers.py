@@ -12,5 +12,5 @@ class PathSerializer(NetBoxModelSerializer):
     class Meta:
         model = Path
         fields = (
-            'id', 'url', 'display', 'name', 'description', 'tags', 'custom_fields', 'data'
+            'id', 'url', 'display', 'name', 'description', 'tags', 'custom_fields', 'graph'
         )

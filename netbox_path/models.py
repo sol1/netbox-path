@@ -10,7 +10,7 @@ class Path(NetBoxModel):
     description = models.TextField(
         blank=True
     )
-    data = models.JSONField(
+    graph = models.JSONField(
         blank=True
     )
 
