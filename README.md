@@ -1,3 +1,5 @@
-# Netbox Path
+# NetBox Path
 
-This is a plugin for Netbox that allows users to map logical paths in infrastructure and attach them to devices, IPs, interfaces and virtual machines. This allows for impact assessment, and monitoring integration.
+This is a plugin for NetBox that allows you to create visual and queryable maps 
+of logical paths within your infrastructure. This allows for impact assessment 
+and monitoring integration.
