@@ -2,24 +2,23 @@ import './style.css'
 import cytoscape from 'cytoscape';
 
 var elements,
-    style,
     cy,
     cnt = 0
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('#app').innerHTML = `
+  document.querySelector('#nbp-container').innerHTML = `
     <div>
       <div class="card">
-        <select id="node-select"></select>
-        <button id="add-node" type="button">Add after selected</button>
-        <button id="delete-selected" type="button">Delete selected</button>
-        <button id="link-selected" type="button">Link selected</button>
-        <button id="save" type="button">Save</button>
-        <button id="reset" type="button">Reset</button>
-        <button id="fit" type="button">Fit</button>
+        <select id="nbp-node-select"></select>
+        <button id="nbp-add-node" type="button">Add after selected</button>
+        <button id="nbp-delete-selected" type="button">Delete selected</button>
+        <button id="nbp-link-selected" type="button">Link selected</button>
+        <button id="nbp-save" type="button">Save</button>
+        <button id="nbp-reset" type="button">Reset</button>
+        <button id="nbp-fit" type="button">Fit</button>
       </div>
-      <div id="cy"></div>
-      <div id="inspector"></div>
+      <div id="nbp-cy"></div>
+      <div id="nbp-inspector"></div>
     </div>
   `
 
@@ -34,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const writeInspector = (ele) => {
-    var insp = document.getElementById('inspector')
+    var insp = document.getElementById('nbp-inspector')
     insp.innerHTML = JSON.stringify(ele.data())
   }
 
@@ -43,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const emptyNodeSelect = () => {
-    var ele = document.getElementById('node-select')
+    var ele = document.getElementById('nbp-node-select')
     ele.innerHTML = ''
     return ele
   }
@@ -58,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const initCytoscape = (elements) => {
     cy = cytoscape({
-      container: document.getElementById('cy'),
+      container: document.getElementById('nbp-cy'),
       layout: {
         name: 'grid'
       },
@@ -108,8 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     cy.on('select', 'node', function(evt) {
-      // var node = evt.target;
-      // document.getElementById('node-select').value = node.id()
+      var node = evt.target;
+      document.getElementById('nbp-node-select').value = node.id()
       // console.log( 'Selected ' + node.id() )
       // node.addClass('has-been-selected')
     })
@@ -126,14 +125,20 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
+  if (typeof netboxPathDataUrl === 'undefined') {
+    console.log("Using local data")
+    var netboxPathDataUrl = 'elements.json' // local mockup
+  }
+
   // Fetch starter elements then initialise Cytoscape
-  var graphP = fetch('elements.json').then(obj => obj.json())
+  var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
+  // var graphP = fetch('http://localhost:8000/static/netbox_path/elements.json').then(obj => obj.json())
 
   Promise.all([ graphP ]).then(promises => {
     elements = promises[0]
     initCytoscape(elements)
 
-    document.querySelector('#add-node').addEventListener('click', () => {
+    document.querySelector('#nbp-add-node').addEventListener('click', () => {
       var added = []
 
       ++cnt
@@ -179,28 +184,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
 
-    document.querySelector('#save').addEventListener('click', () => {
+    document.querySelector('#nbp-save').addEventListener('click', () => {
       saveState()
     })
 
-    document.querySelector('#reset').addEventListener('click', () => {
+    document.querySelector('#nbp-reset').addEventListener('click', () => {
       cy.destroy()
     })
 
-    document.querySelector('#fit').addEventListener('click', () => {
+    document.querySelector('#nbp-fit').addEventListener('click', () => {
       cy.fit()
     })
 
-    document.querySelector('#node-select').addEventListener('change', (event) => {
+    document.querySelector('#nbp-node-select').addEventListener('change', (event) => {
       cy.$('').unselect() // deselect everything else
       cy.$('#' + event.target.value).select()
     })
 
-    document.querySelector('#delete-selected').addEventListener('click', () => {
+    document.querySelector('#nbp-delete-selected').addEventListener('click', () => {
       deleteSelectedNodes()
     })
 
-    document.querySelector('#link-selected').addEventListener('click', () => {
+    document.querySelector('#nbp-link-selected').addEventListener('click', () => {
       // This doesn't pay much attention to ordering but we can't really know
       // that from the user's selection. Maybe we could look at their relative
       // position, and assume linking from left-to-right, top-to-bottom?

@@ -1,30 +1,10 @@
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-#app {
+#nbp-container {
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
 }
 
-.card {
-  padding: 2em;
-}
-
-select {
+#nbp-container select {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -33,40 +13,27 @@ select {
   font-family: inherit;
   background-color: #f9f9f9;
 }
-button {
+#nbp-container button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
+#nbp-container button:hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
+#nbp-container utton:focus,
+#nbp-container button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-#cy {
-  width: 800px;
+#nbp-cy {
+  width: 100%;
   height: 600px;
   background-color: #eee;
 }
