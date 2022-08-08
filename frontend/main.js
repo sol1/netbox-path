@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const saveState = () => {
-    fetch('http://localhost:8000/api/plugins/netbox-path/paths/1/', {
+    fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`, {
       method: 'PATCH',
       body: JSON.stringify({
         graph: cy.json(),
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fetch data from server and initialise Cytoscape
   // var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
-  var fetchPath = fetch('http://localhost:8000/api/plugins/netbox-path/paths/1/').then(obj => obj.json())
+  var fetchPath = fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`).then(obj => obj.json())
 
   Promise.all([ fetchPath ]).then(promises => {
     path = promises[0]

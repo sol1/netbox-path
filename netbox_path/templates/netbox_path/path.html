@@ -7,5 +7,8 @@
 {% block content %}
     <select name="devices" id="netbox-device-select" class="netbox-api-select" data-empty-option="" data-null-option="None" data-url="/api/dcim/devices/"></select>
     <div id="nbp-container"></div>
+    <script>
+        var netboxPathId = {{ object.id }};
+    </script>
     <script type="module" crossorigin src="/static/netbox_path/index.js"></script>
 {% endblock content %}
