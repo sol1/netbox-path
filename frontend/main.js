@@ -1,9 +1,7 @@
 import './style.css'
 import cytoscape from 'cytoscape';
 
-var path,
-    cy,
-    cnt = 0
+var path, cy
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#nbp-container').innerHTML = `
@@ -44,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
         graph: cy.json(),
       }),
       headers: {
+        'X-My-Custom-Header': 'foo',
         'Content-Type': 'application/json',
+        'Authorization': `Token 0123456789abcdef0123456789abcdef01234567`
       },
     })
     .then((response) => response.json())
@@ -139,14 +139,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#nbp-add-node').addEventListener('click', () => {
       var added = []
 
-      ++cnt
-      var fakeNode = 'c'+cnt
+      // Get the value of the device select
+      var deviceSelect = document.getElementById('netbox-device-select')
+      var selectedDevice = deviceSelect.options[deviceSelect.selectedIndex].getAttribute('data-display')
 
       var newNode = {
         group: 'nodes',
         data: {
-          id: fakeNode,
-          label: fakeNode.toUpperCase()
+          id: selectedDevice,
+          label: selectedDevice.toUpperCase()
         }
       }
 
@@ -167,10 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Add an edge between all selected nodes and the new node
       cy.$('node:selected').forEach(s => {
-        var newEdgeId = `edge-${s.id()}-${fakeNode}`
+        var newEdgeId = `edge-${s.id()}-${selectedDevice}`
         if (cy.$id(newEdgeId).length === 0) {
           console.log("Adding new edge " + newEdgeId)
-          let edge = { group: 'edges', data: { id: newEdgeId, source: s.id(), target: fakeNode } }
+          let edge = { group: 'edges', data: { id: newEdgeId, source: s.id(), target: selectedDevice } }
           added = added.concat( cy.add(edge) )
         }
       })
