@@ -4,35 +4,20 @@ import cytoscape from 'cytoscape';
 var path, cy
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('#nbp-container').innerHTML = `
-    <div>
-      <div class="card">
-        <select id="nbp-node-select"></select>
-        <button id="nbp-add-node" type="button">Add after selected</button>
-        <button id="nbp-delete-selected" type="button">Delete selected</button>
-        <button id="nbp-link-selected" type="button">Link selected</button>
-        <button id="nbp-save" type="button">Save</button>
-        <button id="nbp-reset" type="button">Reset</button>
-        <button id="nbp-fit" type="button">Fit</button>
-      </div>
-      <div id="nbp-cy"></div>
-      <div id="nbp-inspector"></div>
-    </div>
-  `
 
-  const writeNodeSelect = () => {
-    var nodeSelect = emptyNodeSelect()
-    cy.nodes().forEach(ele => {
-      var opt = document.createElement('option')
-      opt.innerHTML = ele.data('label')
-      opt.setAttribute('value', ele.id())
-      nodeSelect.appendChild(opt)
-    })
-  }
+  // const writeNodeSelect = () => {
+  //   // var nodeSelect = emptyNodeSelect()
+  //   cy.nodes().forEach(ele => {
+  //     var opt = document.createElement('option')
+  //     opt.innerHTML = ele.data('label')
+  //     opt.setAttribute('value', ele.id())
+  //     nodeSelect.appendChild(opt)
+  //   })
+  // }
 
   const writeInspector = (ele) => {
     var insp = document.getElementById('nbp-inspector')
-    insp.innerHTML = JSON.stringify(ele.data())
+    insp.innerHTML = JSON.stringify(ele.data(), null, 2)
   }
 
   const saveState = () => {
@@ -48,21 +33,82 @@ document.addEventListener('DOMContentLoaded', () => {
       credentials: 'omit'
     })
     .then((response) => response.json())
-    .then((json) => console.log(json));
+    .then((json) => console.log('Saved', json));
   }
 
-  const emptyNodeSelect = () => {
-    var ele = document.getElementById('nbp-node-select')
-    ele.innerHTML = ''
-    return ele
-  }
+  // const emptyNodeSelect = () => {
+  //   var ele = document.getElementById('nbp-node-select')
+  //   ele.innerHTML = ''
+  //   return ele
+  // }
 
   const deleteSelectedNodes = () => {
     var removed = cy.$(':selected').remove()
-    writeNodeSelect()
+    // writeNodeSelect()
     // if (removed.length > 0) {
     //   cy.fit()
     // }
+  }
+
+  const toggleButtons = selected => {
+    const initialClass = 'btn-outline-secondary'
+    const deleteClass = 'btn-danger'
+    const linkClass = 'btn-warning'
+
+    var numSelected = selected.length
+
+    if (numSelected > 0) {
+      // Some stuff is selected. Activate action buttons
+      document.getElementById('nbp-delete-selected').classList.replace(initialClass, deleteClass)
+      document.getElementById('nbp-delete-selected').disabled = false
+      
+      if (cy.$('node:selected').length > 1) {
+        // The link button is only concerned with nodes as opposed to edges
+        document.getElementById('nbp-link-selected').classList.replace(initialClass, linkClass)
+        document.getElementById('nbp-link-selected').disabled = false
+      } else {
+        document.getElementById('nbp-link-selected').classList.replace(linkClass, initialClass)
+        document.getElementById('nbp-link-selected').disabled = true
+      }
+    } else {
+      // Nothing selected - disable action buttons
+      document.getElementById('nbp-delete-selected').classList.replace(deleteClass, initialClass)
+      document.getElementById('nbp-delete-selected').disabled = true
+
+      document.getElementById('nbp-link-selected').classList.replace(linkClass, initialClass)
+      document.getElementById('nbp-link-selected').disabled = true
+    }
+  }
+
+  const labelButtons = selected => {
+    var numSelected = selected.length
+
+    if (numSelected > 1) {
+      document.getElementById('nbp-add-node').innerHTML = `Add and link to ${numSelected} nodes`
+      document.getElementById('nbp-delete-selected').innerHTML = `Delete ${numSelected} nodes`
+
+      if (cy.$('node:selected').length > 1) {
+        // The link button is only concerned with nodes as opposed to edges
+        document.getElementById('nbp-link-selected').innerHTML = `Link ${numSelected} nodes`
+      }
+
+    } else if (numSelected === 1 && selected[0].group() == 'nodes') {
+      document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().label}`
+      document.getElementById('nbp-delete-selected').innerHTML = `Delete`
+      document.getElementById('nbp-link-selected').innerHTML = 'Link'
+
+    } else {
+      // Nothing selected
+      document.getElementById('nbp-add-node').innerHTML = 'Add'
+      document.getElementById('nbp-delete-selected').innerHTML = 'Delete'
+      document.getElementById('nbp-link-selected').innerHTML = 'Link'
+    }
+  }
+
+  const renderButtons = () => {
+    var selected = cy.$(':selected')
+    toggleButtons(selected)
+    labelButtons(selected)
   }
 
   const initCytoscape = (graph) => {
@@ -106,18 +152,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     cy.ready(() => {
-      writeNodeSelect()
+      // Simplify starting point by unselecting everything
+      cy.$('').unselect()
+      renderButtons()
+
+      // writeNodeSelect()
     })
 
-    cy.on('select', 'node', function(evt) {
-      var node = evt.target;
-      document.getElementById('nbp-node-select').value = node.id()
-      // console.log( 'Selected ' + node.id() )
-      // node.addClass('has-been-selected')
+    // Or just when nodes are selected
+    // cy.on('select', 'node', () => {})
+    cy.on('select', event => {
+      // This fires once for every selected node and edge
+      renderButtons()
     })
 
-    cy.on('tap', function(evt) {
-      var ele = evt.target;
+    cy.on('unselect', event => {
+      renderButtons()
+    })
+
+    cy.on('remove', event => {
+      renderButtons()
+    })
+
+    cy.on('tap', event => {
+      var ele = event.target;
       writeInspector(ele)
     })
 
@@ -178,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (added.length > 0) {
         // If we added anything, update stuff
-        writeNodeSelect()
+        // writeNodeSelect()
         // cy.fit()
       }
     })
@@ -187,18 +245,18 @@ document.addEventListener('DOMContentLoaded', () => {
       saveState()
     })
 
-    document.querySelector('#nbp-reset').addEventListener('click', () => {
-      cy.destroy()
-    })
+    // document.querySelector('#nbp-revert').addEventListener('click', () => {
+    //   cy.destroy()
+    // })
 
     document.querySelector('#nbp-fit').addEventListener('click', () => {
       cy.fit()
     })
 
-    document.querySelector('#nbp-node-select').addEventListener('change', (event) => {
-      cy.$('').unselect() // deselect everything else
-      cy.$('#' + event.target.value).select()
-    })
+    // document.querySelector('#nbp-node-select').addEventListener('change', event => {
+    //   cy.$('').unselect() // deselect everything else
+    //   cy.$('#' + event.target.value).select()
+    // })
 
     document.querySelector('#nbp-delete-selected').addEventListener('click', () => {
       deleteSelectedNodes()

@@ -1,39 +1,5 @@
-#nbp-container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-#nbp-container select {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #f9f9f9;
-}
-#nbp-container button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-#nbp-container button:hover {
-  border-color: #646cff;
-}
-#nbp-container utton:focus,
-#nbp-container button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
 #nbp-cy {
+  border: 1px dashed gray;
   width: 100%;
   height: 600px;
-  background-color: #eee;
 }

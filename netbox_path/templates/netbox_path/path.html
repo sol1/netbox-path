@@ -5,8 +5,36 @@
 {% endblock head %}
 
 {% block content %}
-    <select name="devices" id="netbox-device-select" class="netbox-api-select" data-empty-option="" data-null-option="None" data-url="/api/dcim/devices/"></select>
-    <div id="nbp-container"></div>
+        <div class="row">
+            <div class="col-2">
+                <div class="btn-group-sm" role="group">
+                    <button type="button" class="btn btn-success" id="nbp-save">Save</button>
+                    <button type="button" class="btn btn-light" id="nbp-fit">Fit</button>
+                </div>
+
+                <div class="mt-5">
+                    <label for="netbox-device-select" class="form-label">Add Devices</label>
+                    <select id="netbox-device-select" class="form-select netbox-api-select" data-empty-option="" data-null-option="None" data-url="/api/dcim/devices/"></select>
+                    <button type="button" class="btn btn-sm btn-primary mt-2" id="nbp-add-node"></button>
+                </div>
+
+                <div class="btn-group-sm mt-5" role="group">
+                    <button type="button" class="btn btn-outline-secondary" id="nbp-delete-selected" disabled></button>
+                    <button type="button" class="btn btn-outline-secondary" id="nbp-link-selected" disabled></button>
+                </div>
+
+                <div class="mt-5">
+                    <span>Inspector</span>
+                    <div id="nbp-inspector"></div>
+                </div>
+            </div>
+            <div class="col-10">
+                <div id="nbp-container">
+                    <div id="nbp-cy"></div>
+                </div>
+            </div>
+        </div>
+    
     <script>
         var netboxPathId = {{ object.id }};
     </script>
