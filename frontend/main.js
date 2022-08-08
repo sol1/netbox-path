@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteSelectedNodes = () => {
     var removed = cy.$(':selected').remove()
     writeNodeSelect()
-    if (removed.length > 0) {
-      cy.fit()
-    }
+    // if (removed.length > 0) {
+    //   cy.fit()
+    // }
   }
 
   const initCytoscape = (graph) => {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (added.length > 0) {
         // If we added anything, update stuff
         writeNodeSelect()
-        cy.fit()
+        // cy.fit()
       }
     })
 
