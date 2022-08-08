@@ -42,10 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
         graph: cy.json(),
       }),
       headers: {
-        'X-My-Custom-Header': 'foo',
         'Content-Type': 'application/json',
         'Authorization': `Token 0123456789abcdef0123456789abcdef01234567`
       },
+      credentials: 'omit'
     })
     .then((response) => response.json())
     .then((json) => console.log(json));
