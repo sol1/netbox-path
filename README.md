@@ -14,5 +14,5 @@ The models are implemented using Cytoscape JS and built using Vite.
 
 ## Docker-based Netbox dev
 
+* See https://gitlab.sol1.net/SOL1/netbox-path-docker
 * `cd frontend && ./build.sh`
-* `docker-compose down && docker-compose build --no-cache && docker-compose up --force-recreate`
