@@ -7,7 +7,7 @@ mkdir -p $LOCAL_DIR
 rm -rf dist/assets/*
 
 npm run build && \
-  mkdir -p $LOCAL_DIR
+  mkdir -p $PLUGIN_DIR
   
   cp -v dist/assets/index.*.js  $LOCAL_DIR/index.js && \
   cp -v dist/assets/index.*.css $LOCAL_DIR/index.css && \
