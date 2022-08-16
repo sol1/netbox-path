@@ -12,6 +12,9 @@
     "vite": "^3.0.0"
   },
   "dependencies": {
-    "cytoscape": "^3.22.1"
+    "cytoscape": "^3.22.1",
+    "microplugin": "^0.0.3",
+    "sifter": "^0.5.4",
+    "tom-select": "^2.1.0"
   }
 }
