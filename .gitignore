@@ -1,3 +1,7 @@
 __pycache__
 netbox_path/static/netbox_path/index.css
 netbox_path/static/netbox_path/index.js
+dist
+*.egg-info
+.vscode
+.DS_Store
