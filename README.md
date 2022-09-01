@@ -16,3 +16,8 @@ The models are implemented using Cytoscape JS and built using Vite.
 
 * See https://gitlab.sol1.net/SOL1/netbox-path-docker
 * `cd frontend && ./build.sh`
+
+## To release
+
+* Bump version in `netbox_path/__init__.py` and `setup.py`
+* `python setup.py sdist` writes new tarball to `dist/`
