@@ -2,7 +2,7 @@ import './style.css'
 import cytoscape from 'cytoscape';
 import TomSelect from 'tom-select';
 
-var path, cy, objectProperties, netboxObjectSelect, selectedObject
+var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal
 var queryUrl = '/api/dcim/devices/?limit=100'
 var qureyFilters = []
 var filters = []
@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     onChange: function(value) {
       updateSelectedObject(value)
+    },
+    onType: function(str) {
+      queryVal = str
     }
   });
 
@@ -100,13 +103,22 @@ document.addEventListener('DOMContentLoaded', () => {
       query += '&'
       qureyFilters.forEach(filter => {
         query += `${filter.object}_id=${filter.filterValue}&`
+        // If it is the last filter, remove the trailing &
+        if (filter === qureyFilters[qureyFilters.length - 1]) {
+          query = query.slice(0, -1)
+        }
       })
+    }
+    // If the user typed in a search value, add it to the query
+    if (queryVal) {
+      query += `&q=${queryVal}`
     }
     return query
   }
 
   // Update the object select options
   const updateObjectSelect = () => {
+    queryVal = ''
     netboxObjectSelect.clear(true)
     netboxObjectSelect.clearOptions()
     netboxObjectSelect.load(buildQuery())
