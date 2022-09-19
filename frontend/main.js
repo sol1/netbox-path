@@ -2,7 +2,7 @@ import './style.css'
 import cytoscape from 'cytoscape';
 import TomSelect from 'tom-select';
 
-var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal, authToken
+var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal, authToken, currUser
 var queryUrl = '/api/dcim/devices/?limit=100'
 var qureyFilters = []
 var filters = []
@@ -19,46 +19,53 @@ document.addEventListener('DOMContentLoaded', () => {
   //   })
   // }
 
-  // Try and fetch a write enabled token
-  fetch('/api/users/tokens/')
+  // Get the current user from the API
+  fetch(`/api/users/users/${currentUserId}/`)
     .then(response => response.json())
     .then(data => {
-      var tokens = data.results
-      // Iterate through the tokens
-      for (var i = 0; i < tokens.length; i++) {
-        // Check if the token has write permissions
-        if (tokens[i].write_enabled) {
-          // If the token expiry is null
-          if (tokens[i].expires === null) {
-            // Set the current token to that key
-            authToken = tokens[i].key
-            // Break out of the loop
-            break
-          } else {
-            // If the token expiry is not null
-            // Parse the token expiry into a date object
-            var tokenExpiry = new Date(tokens[i].expires)
-            // If the token expiry is in the future
-            if (tokenExpiry > new Date()) {
-              // Set the current token to that key
-              authToken = tokens[i].key
-              // Break out of the loop
-              break
+      currUser = data
+    }).then(() => {
+      // Try and fetch a write enabled token
+      fetch('/api/users/tokens/')
+        .then(response => response.json())
+        .then(data => {
+          var tokens = data.results
+          // Iterate through the tokens
+          for (var i = 0; i < tokens.length; i++) {
+            // Check if the token has write permissions
+            if (tokens[i].user['id'] == currUser.id && tokens[i].write_enabled) {
+              // If the token expiry is null
+              if (tokens[i].expires === null) {
+                // Set the current token to that key
+                authToken = tokens[i].key
+                // Break out of the loop
+                break
+              } else {
+                // If the token expiry is not null
+                // Parse the token expiry into a date object
+                var tokenExpiry = new Date(tokens[i].expires)
+                // If the token expiry is in the future
+                if (tokenExpiry > new Date()) {
+                  // Set the current token to that key
+                  authToken = tokens[i].key
+                  // Break out of the loop
+                  break
+                }
+              }
             }
           }
-        }
-      }
-      // If no token was found print a warning
-      if (authToken === undefined) {
-        // Insert a warning message into the page
-        var warning = document.createElement('div')
-        warning.setAttribute('class', 'alert alert-warning mt-3')
-        warning.innerHTML = 'No write enabled token found'
-        document.getElementById('global-controls').appendChild(warning)
-        // And disable the save button
-        document.getElementById('nbp-save').disabled = true
-      }
-    })
+          // If no token was found print a warning
+          if (authToken === undefined) {
+            // Insert a warning message into the page
+            var warning = document.createElement('div')
+            warning.setAttribute('class', 'alert alert-warning mt-3')
+            warning.innerHTML = 'No write enabled token found for ' + currUser.display + ' user. Please create a token with write permissions.'
+            document.getElementById('global-controls').appendChild(warning)
+            // And disable the save button
+            document.getElementById('nbp-save').disabled = true
+          }
+        })
+      })
 
   // Initialize the object select box
   netboxObjectSelect = new TomSelect('#netbox-object-select', {

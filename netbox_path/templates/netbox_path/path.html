@@ -87,6 +87,8 @@
 	</div>
 </div>
 
+
 <script> var netboxPathId = {{ object.id }}; </script>
+<script> var currentUserId = {{ request.user.id }}; </script>
 <script type="module" crossorigin src="/static/netbox_path/index.js"></script>
 {% endblock content %}
