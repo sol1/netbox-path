@@ -11,7 +11,8 @@ class Path(NetBoxModel):
         blank=True
     )
     graph = models.JSONField(
-        blank=True
+        blank=True,
+        null=True
     )
 
     def get_absolute_url(self):

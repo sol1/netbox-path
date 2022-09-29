@@ -30,6 +30,6 @@ The models are implemented using Cytoscape JS and built using Vite.
 
 `netbox-path @ file:///srv/netbox/current/contrib/netbox_path-0.2.4.tar.gz`
 
-* `./upgrade.sh`
+* `PYTHON=/usr/bin/python3 ./upgrade.sh`
 
 Each user must create an API token with **write** permissions. The plugin will automatically use it.

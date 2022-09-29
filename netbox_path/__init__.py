@@ -4,7 +4,7 @@ class NetBoxPathConfig(PluginConfig):
     name = 'netbox_path'
     verbose_name = 'Netbox Path'
     description = 'Create visual and queryable maps of logical paths within your infrastructure'
-    version = '0.2.4'
+    version = '0.2.5'
     author = 'Andrew Foster'
     author_email = 'support@sol1.com.au'
     base_url = 'netbox-path'
