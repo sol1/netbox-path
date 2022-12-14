@@ -10,7 +10,7 @@ class NetBoxPathConfig(PluginConfig):
     base_url = 'netbox-path'
     required_settings = []
     min_version = '3.2.0'
-    max_version = '3.3.20'
+    max_version = '3.4.20'
     default_settings = {
         'device_ext_page': 'right',
         'asdot': False
