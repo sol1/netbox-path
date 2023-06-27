@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: id,
             label: deviceLabel,
             netboxdata: deviceData,
-            ojectType: objectTypeLabel,
+            objectType: objectTypeLabel,
             selectedNameAttributes: selectedNameAttributes,
           },
         }
@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var node = selected[0]
       var netboxdata = node.data('netboxdata')
       var selectedNameAttributes = {}
-      var label = `${node.data('ojectType')}`
+      var label = `${node.data('objectType')}`
 
       // Get the values submitted from the modal
       var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')

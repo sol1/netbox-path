@@ -11,3 +11,4 @@ class PathTable(NetBoxTable):
         model = Path
         fields = ('pk', 'id', 'name', 'description', 'actions')
         default_columns = ('name', 'description')
+    
