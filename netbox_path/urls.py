@@ -20,5 +20,4 @@ urlpatterns = [
     path('dcim/sites/<int:pk>/paths/', views.SitePath.as_view(), name="site_paths"),
     path('tenancy/tenants/<int:pk>/paths/', views.TenantPath.as_view(), name="tenant_paths"),
     path('virtualization/virtual-machines/<int:pk>/paths/', views.VirtualMachinePath.as_view(), name="virtualmachine_paths"),
-
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

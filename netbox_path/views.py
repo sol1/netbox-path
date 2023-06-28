@@ -1,14 +1,10 @@
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
-from django_tables2 import RequestConfig
-from django.db.models import Q
 from virtualization.models import VirtualMachine
 from tenancy.models import Tenant
 from dcim.models import Device, Rack, Region, Site
 from ipam.models import VLAN
 from django.shortcuts import render
-from django.views import View
-import json
 from . import forms, models, tables
 
 class PathView(generic.ObjectView):
@@ -115,7 +111,7 @@ class TenantPath(generic.ObjectView):
     def get_queryset(self, *args, **kwargs):
         return filter_queryset('Tenant', self.kwargs['pk'])
 
-@register_model_view(VirtualMachine, name='virtualmachina_paths', path='paths')
+@register_model_view(VirtualMachine, name='virtualmachine_paths', path='paths')
 class VirtualMachinePath(generic.ObjectView):
     template_name = 'netbox_path/virtualmachine.html'
     tab = ViewTab(
@@ -133,5 +129,3 @@ class VirtualMachinePath(generic.ObjectView):
 
 def filter_queryset(type, pk):
     return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'objectType': type, 'netboxdata': {'id': int(pk)}}}])
-
-#def filter_qset(queryset, device, pk):

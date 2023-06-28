@@ -4,6 +4,6 @@ from . import views
 app_name = 'netbox_path'
 
 router = NetBoxRouter()
-router.register('paths', views.PathViewSet)
+router.register(r'paths', views.PathViewSet)
 
 urlpatterns = router.urls
