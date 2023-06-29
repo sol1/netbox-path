@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const writeInspector = (ele) => {
     var insp = document.getElementById('nbp-inspector')
-    insp.innerHTML = JSON.stringify(ele.data(), null, 2)
+    insp.value = JSON.stringify(ele.data(), null, 2)
   }
 
   const saveState = () => {
@@ -360,40 +360,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Change what buttons are active based on the selected node
   const toggleButtons = selected => {
-    const initialClass = 'btn-outline-secondary'
-    const deleteClass = 'btn-danger'
-    const linkClass = 'btn-warning'
-    const editClass = 'btn-primary'
-
     var numSelected = selected.length
 
     if (numSelected > 0) {
       // Some stuff is selected. Activate action buttons
-      document.getElementById('nbp-delete-selected').classList.replace(initialClass, deleteClass)
       document.getElementById('nbp-delete-selected').disabled = false
-
-      document.getElementById('nbp-edit-selected').classList.replace(initialClass, editClass)
       document.getElementById('nbp-edit-selected').disabled = false
       
       if (cy.$('node:selected').length > 1) {
-        // The link button is only concerned with nodes as opposed to edges
-        document.getElementById('nbp-link-selected').classList.replace(initialClass, linkClass)
         document.getElementById('nbp-link-selected').disabled = false
-
-        document.getElementById('nbp-edit-selected').classList.replace(editClass, initialClass)
         document.getElementById('nbp-edit-selected').disabled = true
       } else {
-        document.getElementById('nbp-link-selected').classList.replace(linkClass, initialClass)
         document.getElementById('nbp-link-selected').disabled = true
       }
     } else {
       // Nothing selected - disable action buttons
-      document.getElementById('nbp-delete-selected').classList.replace(deleteClass, initialClass)
       document.getElementById('nbp-delete-selected').disabled = true
-
-      document.getElementById('nbp-link-selected').classList.replace(linkClass, initialClass)
       document.getElementById('nbp-link-selected').disabled = true
-
       document.getElementById('nbp-edit-selected').disabled = true
     }
   }
@@ -404,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (numSelected > 1) {
       document.getElementById('nbp-add-node').innerHTML = `Add and link to ${numSelected} nodes`
-      document.getElementById('nbp-delete-selected').innerHTML = `Delete ${numSelected} nodes`
+      document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete ${numSelected} nodes`
 
       if (cy.$('node:selected').length > 1) {
         // The link button is only concerned with nodes as opposed to edges
@@ -413,13 +396,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else if (numSelected === 1 && selected[0].group() == 'nodes') {
       document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().netboxdata.name}`
-      document.getElementById('nbp-delete-selected').innerHTML = `Delete`
+      document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete`
       document.getElementById('nbp-link-selected').innerHTML = 'Link'
 
     } else {
       // Nothing selected
       document.getElementById('nbp-add-node').innerHTML = 'Add'
-      document.getElementById('nbp-delete-selected').innerHTML = 'Delete'
+      document.getElementById('nbp-delete-selected').innerHTML = '<span class="mdi mdi-trash-can-outline"></span> Delete'
       document.getElementById('nbp-link-selected').innerHTML = 'Link'
     }
   }
@@ -747,6 +730,24 @@ document.addEventListener('DOMContentLoaded', () => {
         button.innerText = 'Hide Filters'
       } else {
         button.innerText = 'Show Filters'
+      }
+    })
+
+    document.getElementById('netbox-object-inspector-showhide').addEventListener('click', () => {
+      // Toggle the visibility of the filters
+      var filter = document.getElementById('netbox-object-inspector')
+      if (filter.style.display === 'none') {
+        filter.style.display = 'block'
+      } else {
+        filter.style.display = 'none'
+      }
+
+      // Change the button text
+      var button = document.getElementById('netbox-object-inspector-showhide')
+      if (button.innerText === 'Show Inspector') {
+        button.innerText = 'Hide Inspector'
+      } else {
+        button.innerText = 'Show Inspector'
       }
     })
 
