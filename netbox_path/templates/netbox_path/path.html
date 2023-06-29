@@ -9,14 +9,14 @@
 	<div class="col-8">
 		<div class="btn-group-sm" role="group">
 			<button type="button" class="btn btn-success" id="nbp-save">Save</button>
-			<button type="button" class="btn btn-primary" id="nbp-link-selected" disabled></button>
+			<button type="button" class="btn btn-primary" id="nbp-link-selected" disabled>Link</button>
 			<button type="button" class="btn btn-light" id="nbp-fit">Fit</button>
 		</div>
 	</div>
 	<div class="col-4 d-flex justify-content-end">
 		<div class="btn-group-sm" role="group">
 			<button id="nbp-edit-selected" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#nbp-node-edit-modal" disabled><span class="mdi mdi-pencil"></span> Edit Node</button>
-			<button type="button" class="btn btn-danger" id="nbp-delete-selected" disabled></button>
+			<button type="button" class="btn btn-danger" id="nbp-delete-selected" disabled><span class="mdi mdi-trash-can-outline"></span> Delete</button>
 		</div>
 	</div>
 	<div class="col-12"><div id="global-controls"></div></div>
@@ -52,7 +52,7 @@
 		
 		<label id="netbox-object-select-label" for="netbox-object-select" class="form-label h5">Add Object</label>
 		<select id="netbox-object-select"></select>
-		<button type="button" class="btn btn-sm btn-primary mt-2" id="nbp-add-node"></button>
+		<button type="button" class="btn btn-sm btn-primary mt-2" id="nbp-add-node">Add</button>
 
 		<div id="netbox-object-inspector-container" class="mb-2 mt-2">
 			<button type="button" class="btn btn-sm btn-light" id="netbox-object-inspector-showhide">Show Inspector</button>
