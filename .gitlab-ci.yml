@@ -16,11 +16,12 @@ demo:
     - cd ..
     - export VERSION=`grep ' version ' netbox_path/__init__.py |awk '{ print $3}'|sed -e "s/'//g"`
     - python3 setup.py sdist
-    - cp dist/netbox_path-$VERSION.tar.gz /srv/netbox/plugins/
+    - sudo cp dist/netbox_path-$VERSION.tar.gz /srv/netbox/plugins/
     - cd /srv/netbox/current 
-    - echo "netbox-path @ file:///srv/netbox/plugins/netbox_path-$VERSION.tar.gz" > /srv/netbox/current/local_requirements.txt
-    - rm -rf venv-py3old
-    - mv venv-py3 venv-py3old
-    - mv venv venv-py3
+    - sudo echo "netbox-path @ file:///srv/netbox/plugins/netbox_path-$VERSION.tar.gz" > /srv/netbox/current/local_requirements.txt
+    - chown netbox:netbox /srv/netbox/current/local_requirements.txt
+    - sudo rm -rf venv-py3old
+    - sudo mv venv-py3 venv-py3old
+    - sudo mv venv venv-py3
     - sudo sytemctl restart netbox
 
