@@ -6,6 +6,10 @@ and monitoring integration.
 
 The models are implemented using Cytoscape JS and built using Vite.
 
+## Demo deployment
+the demo branch deploys to a gitlab runner on netbox-path.sol1.net
+pushing to that branch will trigger a new deployment for the demo
+
 ## Front-end development
 
 * `cd frontend`
