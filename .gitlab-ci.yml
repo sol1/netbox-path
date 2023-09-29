@@ -14,9 +14,9 @@ demo:
     - npm install
     - ./build.sh
     - cd ..
-    - VERSION=`grep ' version ' netbox_path/__init__.py |awk '{ print $3}'|sed -e "s/'//g"`
+    - export VERSION=`grep ' version ' netbox_path/__init__.py |awk '{ print $3}'|sed -e "s/'//g"`
     - python3 setup.py sdist
-    - copy dist/netbox_path-$VERSION.tar.gz /srv/netbox/plugins/
+    - cp dist/netbox_path-$VERSION.tar.gz /srv/netbox/plugins/
     - cd /srv/netbox/current 
     - echo "netbox-path @ file:///srv/netbox/plugins/netbox_path-$VERSION.tar.gz" > /srv/netbox/current/local_requirements.txt
     - rm -rf venv-py3old
