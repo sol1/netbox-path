@@ -1,0 +1,14 @@
+---
+stages:
+  - demo
+
+
+demo:
+  stage: demo
+  only:
+    - demo
+  tags:
+    - netbox-path-demo
+  script:
+    - whoami
+
