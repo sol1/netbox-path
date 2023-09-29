@@ -11,6 +11,7 @@ demo:
     - netbox-path-demo
   script:
     - cd frontend
+    - npm install
     - ./build.sh
     - cd ..
     - VERSION=`grep ' version ' netbox_path/__init__.py |awk '{ print $3}'|sed -e "s/'//g"`
