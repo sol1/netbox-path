@@ -8,17 +8,6 @@ var qureyFilters = []
 var filters = []
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  // const writeNodeSelect = () => {
-  //   // var nodeSelect = emptyNodeSelect()
-  //   cy.nodes().forEach(ele => {
-  //     var opt = document.createElement('option')
-  //     opt.innerHTML = ele.data('label')
-  //     opt.setAttribute('value', ele.id())
-  //     nodeSelect.appendChild(opt)
-  //   })
-  // }
-
   // Get the current user from the API
   fetch(`/api/users/users/${currentUserId}/`)
     .then(response => response.json())
@@ -444,14 +433,15 @@ document.addEventListener('DOMContentLoaded', () => {
             'background-color': 'teal',
             'label': 'data(label)',
             'shape': 'roundrectangle',
-            'width': '100',
-            'height': '100',
+            'width': '150',
+            'height': '150',
             'text-valign': 'center',
             'text-halign': 'center',
             'text-wrap': 'wrap',
+            "font-size":"12px",
             'color': '#fff',
             'text-outline-color': 'teal',
-            'text-outline-width': 3
+            'text-outline-width': 2
           }
         },
         {
