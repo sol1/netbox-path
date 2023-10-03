@@ -14,7 +14,7 @@
   "dependencies": {
     "cytoscape": "^3.22.1",
     "microplugin": "^0.0.3",
-    "sifter": "^0.5.4",
+    "sifter": "^0.0.5",
     "tom-select": "^2.1.0"
   }
 }

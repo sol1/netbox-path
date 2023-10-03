@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('nbp-save').disabled = true
           }
         })
-      })
+    })
 
   // Initialize the object select box
   netboxObjectSelect = new TomSelect('#netbox-object-select', {
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     options: [],
     preload: true,
     create: false,
-    load: function(query, callback) {
+    load: function (query, callback) {
       fetch(buildQuery())
         .then(response => response.json())
         .then(data => {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     },
     render: {
-      option: function(item, escape) {
+      option: function (item, escape) {
         var objectDetails = ''
         for (var key in item) {
           if (item[key] !== null && typeof item[key] === 'object' && "url" in item[key]) {
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return `<div class="d-flex">
                   <div class="mb-1">
-                    <p class="h5">${ escape(item.display) }</p>
+                    <p class="h5">${escape(item.display)}</p>
                     <div class="container">
                       <div class="row">
                         ${objectDetails}
@@ -105,10 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
       },
     },
-    onChange: function(value) {
+    onChange: function (value) {
       updateSelectedObject(value)
     },
-    onType: function(str) {
+    onType: function (str) {
       queryVal = str
     }
   });
@@ -194,11 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
     deviceTypeLabel.setAttribute('for', elementId)
     deviceTypeLabel.innerHTML = `Filter by: ${formatKey(key)}`
     document.getElementById('netbox-object-select-filter').appendChild(deviceTypeLabel)
-    
+
     // Create a new select element for the device type
     var deviceTypeSelect = document.createElement('select')
     deviceTypeSelect.setAttribute('id', elementId)
-    
+
     // Append the select element to the page
     document.getElementById('netbox-object-select-filter').appendChild(deviceTypeSelect)
   }
@@ -231,9 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
           options: [],
           preload: true,
           create: false,
-          load: function(query, callback) {
+          load: function (query, callback) {
             var inputId = this.inputId
-            var url = filters.filter(function(element){ return element.domId == inputId; })[0].url
+            var url = filters.filter(function (element) { return element.domId == inputId; })[0].url
             fetch(`${url}/?limit=100&q=${query}`)
               .then(response => response.json())
               .then(data => {
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
               })
           },
           render: {
-            option: function(item, escape) {
+            option: function (item, escape) {
               var objectDetails = ''
               for (var key in item) {
                 if (item[key] !== null && typeof item[key] === 'object' && "url" in item[key]) {
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               return `<div class="d-flex">
                         <div class="mb-1">
-                          <p class="h5">${ escape(item.display) }</p>
+                          <p class="h5">${escape(item.display)}</p>
                           <div class="container">
                             <div class="row">
                               ${objectDetails}
@@ -263,14 +263,14 @@ document.addEventListener('DOMContentLoaded', () => {
                       </div>`;
             },
           },
-          onChange: function(e) {
+          onChange: function (e) {
             var inputId = this.inputId
-            var key = filters.filter(function(element){ return element.domId == inputId; })[0].key
+            var key = filters.filter(function (element) { return element.domId == inputId; })[0].key
             var filterValue = e
             updateQueryFilters(key, filterValue)
           }
         });
-        
+
         // Add the filter to the list of filters
         filters.push({ domId: deviceTypeSelectId, url: deviceTypeUrl, key: key })
       }
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set the label of the device select to the name of the selected object type
     var objectLabel = document.getElementById('netbox-object-select-label')
     var objectTypeLabel = objectTypeSelect.options[objectTypeSelect.selectedIndex].innerHTML
-    
+
     // Drop the s from the end of the object type name
     if (objectTypeLabel.endsWith('s')) {
       objectTypeLabel = objectTypeLabel.slice(0, -1)
@@ -328,10 +328,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const saveState = () => {
+    var graphData = cy.json();
+    delete graphData['data'];
+    delete graphData['pan'];
+    delete graphData['zoom'];
+    delete graphData['style'];
+    delete graphData['maxZoom'];
+    delete graphData['minZoom'];
+    delete graphData['renderer'];
+    delete graphData['panningEnabled'];
+    delete graphData['zoomingEnabled'];
+    delete graphData['userPanningEnabled'];
+    delete graphData['userZoomingEnabled'];
+    delete graphData['boxSelectionEnabled'];
+
     fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`, {
       method: 'PATCH',
       body: JSON.stringify({
-        graph: cy.json(),
+        graph: graphData,
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -339,8 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       credentials: 'omit'
     })
-    .then((response) => response.json())
-    .then((json) => console.log('Saved', json));
+      .then((response) => response.json())
+      .then((json) => console.log('Saved', json));
   }
 
   // const emptyNodeSelect = () => {
@@ -366,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Some stuff is selected. Activate action buttons
       document.getElementById('nbp-delete-selected').disabled = false
       document.getElementById('nbp-edit-selected').disabled = false
-      
+
       if (cy.$('node:selected').length > 1) {
         document.getElementById('nbp-link-selected').disabled = false
         document.getElementById('nbp-edit-selected').disabled = true
@@ -395,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
     } else if (numSelected === 1 && selected[0].group() == 'nodes') {
-      document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().netboxdata.name}`
+      document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().object.name}`
       document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete`
       document.getElementById('nbp-link-selected').innerHTML = 'Link'
 
@@ -514,12 +528,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       ],
     })
-    
+
     if (graph) {
       // Overlay data from server
       cy.json(graph)
     }
-    
+
     cy.ready(() => {
       // Simplify starting point by unselecting everything
       cy.$('').unselect()
@@ -545,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cy.on('tap', event => {
       var ele = event.target;
-      console.log(ele)
+      console.log(ele);
       writeInspector(ele)
     })
 
@@ -560,14 +574,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
   var fetchPath = fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`).then(obj => obj.json())
 
-  Promise.all([ fetchPath ]).then(promises => {
+  Promise.all([fetchPath]).then(promises => {
     path = promises[0]
     initCytoscape(path.graph)
 
     document.querySelector('#nbp-add-node').addEventListener('click', () => {
       var added = []
       var selectedNameAttributes = {}
-      
+
       // Get the selected value from netbox-object-type-select
       var selectedObjectType = document.getElementById('netbox-object-type-select')
       var objectUrl = selectedObjectType.options[selectedObjectType.selectedIndex].getAttribute('value')
@@ -576,13 +590,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // Set the label of the device select to the name of the selected object type
       var objectType = objectUrl.split('/')[1]
       var objectTypeLabel = formatKey(objectType);
-      
-      // Drop the s from the end of the object type name
-      if (objectTypeLabel.endsWith('s')) {
-        objectTypeLabel = objectTypeLabel.slice(0, -1)
-      }
 
-      Promise.all([ fetchData ]).then(promises => {
+      // Drop the s from the end of the object type name
+      //if (objectTypeLabel.endsWith('s')) {
+      //  objectTypeLabel = objectTypeLabel.slice(0, -1)
+      //}
+      objectTypeLabel = objectUrl.replaceAll('/', '.');
+
+      Promise.all([fetchData]).then(promises => {
         var deviceData = promises[0]
         var deviceLabel = `${objectTypeLabel}`
 
@@ -606,16 +621,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Generate a random id for the new node
         var id = Math.random().toString(36).substring(7)
-        
+
         // Create the new node
         var newNode = {
-          group: 'nodes',
           data: {
             id: id,
             label: deviceLabel,
-            netboxdata: deviceData,
-            objectType: objectTypeLabel,
             selectedNameAttributes: selectedNameAttributes,
+            object: {
+              id: deviceData.id,
+              type: objectTypeLabel,
+              url: deviceData.url,
+              display: deviceData.display,
+              name: deviceData.name,
+            },
           },
         }
 
@@ -632,15 +651,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add the new node
         added = added.concat(
           cy.add(newNode)
-          )
+        )
 
         // Add an edge between all selected nodes and the new node
         cy.$('node:selected').forEach(s => {
           var newEdgeId = `edge-${s.id()}-${id}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { group: 'edges', data: { id: newEdgeId, source: s.id(), target: id } }
-            added = added.concat( cy.add(edge) )
+            let edge = { data: { id: newEdgeId, source: s.id(), target: id } }
+            added = added.concat(cy.add(edge))
           }
         })
 
@@ -648,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // If we added anything, update stuff
           // writeNodeSelect()
-          // cy.fit()
+          cy.fit()
         }
       })
     })
@@ -696,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${a.id()}-${b.id()}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { group: 'edges', data: { id: newEdgeId, source: a.id(), target: b.id() } }
+            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id() } }
             cy.add(edge)
           }
         })
@@ -759,13 +778,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return
       }
       var node = selected[0]
-      var netboxdata = node.data('netboxdata')
+      var objectData = node.data('object')
 
-      // For every key in the netboxdata, create a checkbox and label
+      // For every key in the objectData, create a checkbox and label
       var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
       modalNodeAttributesSection.innerHTML = ''
-      for (var key in netboxdata) {
-        if (netboxdata[key] === null || netboxdata[key] === undefined || Object.keys(netboxdata[key]).length === 0) {
+      for (var key in objectData) {
+        if (objectData[key] === null || objectData[key] === undefined || Object.keys(objectData[key]).length === 0) {
           continue
         }
 
@@ -803,9 +822,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return
       }
       var node = selected[0]
-      var netboxdata = node.data('netboxdata')
+      var objectData = node.data('object')
       var selectedNameAttributes = {}
-      var label = `${node.data('objectType')}`
+      var label = `${node.data('object').type}`
 
       // Get the values submitted from the modal
       var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
@@ -813,17 +832,17 @@ document.addEventListener('DOMContentLoaded', () => {
       for (var i = 0; i < checkboxes.length; i++) {
         var checkbox = checkboxes[i]
         var key = checkbox.id.split('-')[2]
-        
+
         if (checkbox.checked) {
-          // Check if the netboxdata is an object
-          if (typeof netboxdata[key] === 'object') {
-            if (!netboxdata[key].display) {
-              label += `\n${formatKey(key)}: ${netboxdata[key].label}`
+          // Check if the objectData is an object
+          if (typeof objectData[key] === 'object') {
+            if (!objectData[key].display) {
+              label += `\n${formatKey(key)}: ${objectData[key].label}`
             } else {
-              label += `\n${formatKey(key)}: ${netboxdata[key].display}`
+              label += `\n${formatKey(key)}: ${objectData[key].display}`
             }
           } else {
-            label += `\n${formatKey(key)}: ${netboxdata[key]}`
+            label += `\n${formatKey(key)}: ${objectData[key]}`
           }
           selectedNameAttributes[key] = true
         }
@@ -833,7 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     // Get the value of the object type when the user selects it
-    document.getElementById('netbox-object-type-select').addEventListener('change', function() {
+    document.getElementById('netbox-object-type-select').addEventListener('change', function () {
       changeFilters()
     })
   });

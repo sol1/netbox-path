@@ -128,4 +128,4 @@ class VirtualMachinePath(generic.ObjectView):
 
 
 def filter_queryset(type, pk):
-    return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'objectType': type, 'netboxdata': {'id': int(pk)}}}])
+    return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'object': { 'id': int(pk), 'type': type}}}])
