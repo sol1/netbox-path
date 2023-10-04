@@ -4,33 +4,53 @@ OBJECT_ID = 1
 OBJECT_TYPE = 'dcim.devices'
 
 HOST = 'localhost:8000'
-API_KEY = ''
+API_KEY = '5f73f36b40dce5a99ce3bcb0314342ffe2ac5054'
 
 cached_objects = {}
 visited_edges = []
 visited_nodes = []
 visited_graphs = []
 
-def check_edges(node_key, node, object):
-    print(f'Found node {node_key} {node["type"]} {node["id"]}')
-    if node_key not in visited_nodes:
-        visited_nodes.append(node_key)
-    for edge in object['graph']['edges']:
-        edge_key = edge['key']
-        if edge_key not in visited_edges:
-            visited_edges.append(edge_key)
-            if edge['source'] == node_key:
-                child_node_key = edge['target']
-                for child_node in object['graph']['nodes']:
-                    #print(child_node_key, child_node['key'])
-                    if child_node['key'] == child_node_key:
-                        print(f'Iterate over children of {child_node}')
-                        check_object(child_node['attributes']['object']['id'], child_node['attributes']['object']['type'])
-                        if child_node_key not in visited_nodes:
-                            visited_nodes.append(child_node_key)
+affected_objects = []
 
-        else:
-            print(f'Already visited edge {edge_key}')
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Token {API_KEY}',
+}
+
+def check_edges(node_key, node, object):
+    node_key = node['id']
+    node_type = node['object']['type']
+    node_id = node['object']['id']
+
+    print(f'Found node {node_key} {node_type} {node_id}')
+    if node_key not in visited_nodes:
+        if f'{node_type}:{node_id}' not in affected_objects:
+            affected_objects.append(f'{node_type}:{node_id}')
+        visited_nodes.append(node_key)
+        try:
+            for edge in object['graph']['elements']['edges']:
+                edge_key = edge['data']['id']
+                edge_source = edge['data']['source']
+                edge_target = edge['data']['target']
+                if edge_source == node_key:
+                    if edge_key not in visited_edges:
+                        visited_edges.append(edge_key)
+                        print(f'Found edge {edge_key} {edge_source}->{edge_target}')
+                        child_node_key = edge['data']['target']
+                        for child_node in object['graph']['elements']['nodes']:
+                            #print(child_node_key, child_node['data']['id'])
+                            if child_node['data']['id'] == child_node_key:
+                                print(f'Iterate over children of {child_node["data"]["id"]}')
+                                check_object(child_node['data']['object']['id'], child_node['data']['object']['type'])
+                                if child_node_key not in visited_nodes:
+                                    visited_nodes.append(child_node_key)
+                    else:
+                        print(f'Already visited edge {edge_key}')
+        except Exception as e:
+            print('No edges found')
+    else:
+        print(f'Already visited node {node_key}')
 
 def check_object(object_id, object_type):
     object_type = object_type.replace('.', '/')
@@ -38,10 +58,6 @@ def check_object(object_id, object_type):
         print(f'Already visited this node using cached response {object_type} {object_id}')
         response = cached_objects[f'{object_type}:{object_id}']
     else:
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Token {API_KEY}',
-        }
         response = requests.get(f'http://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/', headers=headers).json()
         print(f'Requesting paths for {object_type} {object_id} http://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/')
         cached_objects[f'{object_type}:{object_id}'] = response
@@ -53,14 +69,26 @@ def check_object(object_id, object_type):
         if path_id not in visited_graphs:
             visited_graphs.append(path_id)
 
-        for node in object['graph']['nodes']:
-            node_key = node['key']
-            node = node['attributes']['object']
-            if node['type'] == object_type and node['id'] == object_id:
+        for node in object['graph']['elements']['nodes']:
+            node = node['data']
+            node_key = node['id']
+            if node['object']['type'] == object_type and node['object']['id'] == object_id:
                 check_edges(node_key, node, object)
 
+def get_contacts():
+    response = requests.get(f'http://{HOST}/api/tenancy/contact-assignments/', headers=headers).json()
+    for object in affected_objects:
+        type = object.split(':')[0].rsplit('s', 1)[0]
+        id = object.split(':')[1]
+        print(f'Checking contacts for {type} {id}')
+        for assignment in response['results']:
+            if assignment['content_type'] == type and assignment['object_id'] == int(id):
+                contact_response = requests.get(assignment['contact']['url'], headers=headers).json()
+                print(f'{type} {id} - Contact {contact_response["name"]} {contact_response["email"]} {contact_response["phone"]}')
+    #print(response)
 
 check_object(OBJECT_ID, OBJECT_TYPE)
+get_contacts()
 
 print('')
 print(f'Visited graphs: {visited_graphs}')
