@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
 from django.urls import reverse
 
 from netbox.models import NetBoxModel
@@ -13,6 +14,10 @@ class Path(NetBoxModel):
     graph = models.JSONField(
         blank=True,
         null=True
+    )
+
+    contacts = GenericRelation(
+        to='tenancy.ContactAssignment'
     )
 
     def get_absolute_url(self):

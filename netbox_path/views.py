@@ -3,6 +3,7 @@ from utilities.views import ViewTab, register_model_view
 from virtualization.models import VirtualMachine
 from tenancy.models import Tenant
 from dcim.models import Device, Rack, Region, Site
+from tenancy.views import ObjectContactsView
 from ipam.models import VLAN
 from django.shortcuts import render
 from . import forms, models, tables
@@ -19,6 +20,10 @@ class PathEditView(generic.ObjectEditView):
     form = forms.PathForm
 
 class PathDeleteView(generic.ObjectDeleteView):
+    queryset = models.Path.objects.all()
+
+@register_model_view(models.Path, 'contacts')
+class PathContactsView(ObjectContactsView):
     queryset = models.Path.objects.all()
 
 @register_model_view(Device, name='device_paths', path='paths')
