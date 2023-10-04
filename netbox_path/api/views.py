@@ -11,93 +11,93 @@ class PathViewSet(NetBoxModelViewSet):
 
     # Device objects
 
-    @action(detail=False, methods=["get"], url_path=r'device/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'dcim/devices/(?P<pk>[^/.]+)')
     def device(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Device', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.devices', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'device')
+    @action(detail=False, methods=["get"], url_path=r'dcim/devices')
     def devices(self, request):
-        serializer = PathSerializer(filter_queryset('Device', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.devices', None), many=True, context={'request': request})
         return Response(serializer.data)
     
     # VLan objects
 
-    @action(detail=False, methods=["get"], url_path=r'vlan/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'ipam/vlans/(?P<pk>[^/.]+)')
     def vlan(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Vlan', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('ipam.vlans', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'vlan')
+    @action(detail=False, methods=["get"], url_path=r'ipam/vlans')
     def vlans(self, request):
-        serializer = PathSerializer(filter_queryset('Vlan', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('ipam.vlans', None), many=True, context={'request': request})
         return Response(serializer.data)
 
 
     # Rack objects
 
-    @action(detail=False, methods=["get"], url_path=r'rack/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'dcim/racks/(?P<pk>[^/.]+)')
     def rack(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Rack', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.racks', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'rack')
+    @action(detail=False, methods=["get"], url_path=r'dcim/racks')
     def racks(self, request):
-        serializer = PathSerializer(filter_queryset('Rack', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.racks', None), many=True, context={'request': request})
         return Response(serializer.data)
 
 
     # Region objects
 
-    @action(detail=False, methods=["get"], url_path=r'region/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'dcim/regions/(?P<pk>[^/.]+)')
     def region(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Region', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.regions', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'region')
+    @action(detail=False, methods=["get"], url_path=r'dcim/regions')
     def regions(self, request):
-        serializer = PathSerializer(filter_queryset('Region', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.regions', None), many=True, context={'request': request})
         return Response(serializer.data)
 
     
     # Site objects
 
-    @action(detail=False, methods=["get"], url_path=r'site/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'dcim/sites/(?P<pk>[^/.]+)')
     def site(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Site', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.sites', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'site')
+    @action(detail=False, methods=["get"], url_path=r'dcim/sites')
     def sites(self, request):
-        serializer = PathSerializer(filter_queryset('Site', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('dcim.sites', None), many=True, context={'request': request})
         return Response(serializer.data)
     
     # Tenant objects
     
-    @action(detail=False, methods=["get"], url_path=r'tenant/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'tenancy/tenants/(?P<pk>[^/.]+)')
     def tenant(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Tenant', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('tenancy.tenants', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'tenant')
+    @action(detail=False, methods=["get"], url_path=r'tenancy/tenants')
     def tenants(self, request):
-        serializer = PathSerializer(filter_queryset('Tenant', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('tenancy.tenants', None), many=True, context={'request': request})
         return Response(serializer.data)
 
     # Virtual Machine objects
 
-    @action(detail=False, methods=["get"], url_path=r'virtual-machine/(?P<pk>[^/.]+)')
+    @action(detail=False, methods=["get"], url_path=r'virtualization/virtual-machines/(?P<pk>[^/.]+)')
     def virtual_machine(self, request, pk=None):
-        serializer = PathSerializer(filter_queryset('Virtual-machine', pk), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('virtualization.virtual-machines', pk), many=True, context={'request': request})
         return Response(serializer.data)
     
-    @action(detail=False, methods=["get"], url_path=r'virtual-machine')
+    @action(detail=False, methods=["get"], url_path=r'virtualization/virtual-machines/')
     def virtual_machines(self, request):
-        serializer = PathSerializer(filter_queryset('Virtual-machine', None), many=True, context={'request': request})
+        serializer = PathSerializer(filter_queryset('virtualization.virtual-machines', None), many=True, context={'request': request})
         return Response(serializer.data)
 
 def filter_queryset(type, pk):
     if pk is not None:
-        return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'objectType': type, 'netboxdata': {'id': int(pk)}}}])
+        return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'object': { 'id': int(pk), 'type': type}}}])
     else:
-        return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'objectType': type}}])
+        return models.Path.objects.filter(graph__elements__nodes__contains=[{'data': {'object': {'type': type}}}])
