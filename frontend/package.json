@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "cytoscape": "^3.22.1",
+    "cytoscape-navigator": "^2.0.2",
+    "cytoscape-node-html-label": "^1.2.2",
     "microplugin": "^0.0.3",
     "sifter": "^0.0.5",
     "tom-select": "^2.1.0"

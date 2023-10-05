@@ -15,6 +15,7 @@
 	</div>
 	<div class="col-4 d-flex justify-content-end">
 		<div class="btn-group-sm" role="group">
+			<button id="nbp-change-icon-selected" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#nbp-node-change-icon-modal" disabled><span class="mdi mdi-image"></span> Change Icon</button>
 			<button id="nbp-edit-selected" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#nbp-node-edit-modal" disabled><span class="mdi mdi-pencil"></span> Edit Node</button>
 			<button type="button" class="btn btn-danger" id="nbp-delete-selected" disabled><span class="mdi mdi-trash-can-outline"></span> Delete</button>
 		</div>
@@ -64,7 +65,7 @@
 	</div>
 	<div class="col-10">
 		<div id="nbp-container">
-			<div id="nbp-cy"></div>
+			<div id="nbp-cy"><div id="nbp-navigator"></div></div>
 		</div>
 	</div>
 
@@ -86,6 +87,32 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 					<button type="button" class="btn btn-primary" id="nbp-node-edit-save" data-bs-dismiss="modal">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% comment %} Modal For Editing Node Icon {% endcomment %}
+	<div class="modal fade" id="nbp-node-change-icon-modal" tabindex="-1" role="dialog" aria-labelledby="nbp-node-change-icon-modal-label" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="nbp-node-change-icon-modal-label">Change Icon</h5>
+				</div>
+				<div class="modal-body" style="max-height: 50vh; min-height: 50vh; overflow: scroll;">
+					<div class="mb-2">
+						<span class="h6">Icons</span>
+					</div>
+					<div>
+						<input type="text" class="form-control" id="nbp-node-icon-search" placeholder="Search Icons" />
+					</div>
+					<div id="node-icons-to-show" class="row g-3 mb-3 mt-2">
+						{% comment %} The JS will fill this div with icons {% endcomment %}
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="nbp-node-change-icon-save" data-bs-dismiss="modal">Save</button>
 				</div>
 			</div>
 		</div>

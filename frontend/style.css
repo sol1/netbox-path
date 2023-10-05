@@ -4,6 +4,61 @@
   height: 600px;
 }
 
+#nbp-navigator {
+  min-height: 25%;
+  min-width: 25%;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  overflow: hidden;
+  z-index: 999999;
+  background: white !important;
+}
+
+.cytoscape-navigatorOverlay {
+  border: 3px solid gray;
+  background: transparent;
+  cursor: move;
+}
+
+
+.cytoscape-navigatorOverlay {
+  border: 2px solid #2b689c;
+  background: transparent;
+}
+
+.cytoscape-navigator.mouseover-view .cytoscape-navigatorOverlay {
+  background-color: rgba(18, 65, 145, 0.3);
+}
+
+.node {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.node-icon {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  margin-top: 16px;
+  border: 1px solid gray;
+}
+
+.node-label {
+  font-size: 6px;
+  max-width: 75px;
+  white-space: nowrap;
+  color: black;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
 /* Tom-Select Styling */
 
 /**

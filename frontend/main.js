@@ -1,13 +1,21 @@
 import './style.css'
+import spriteUrl from './sprite.svg'
+import "cytoscape-navigator/cytoscape.js-navigator.css";
+
 import cytoscape from 'cytoscape';
+import navigator from 'cytoscape-navigator';
+import nodeHtmlLabel from 'cytoscape-node-html-label';
 import TomSelect from 'tom-select';
 
 var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal, authToken, currUser
 var queryUrl = '/api/dcim/devices/?limit=100'
 var qureyFilters = []
 var filters = []
+var symbols = []
 
 document.addEventListener('DOMContentLoaded', () => {
+  navigator(cytoscape);
+  nodeHtmlLabel(cytoscape);
   // Get the current user from the API
   fetch(`/api/users/users/${currentUserId}/`)
     .then(response => response.json())
@@ -55,6 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         })
     })
+
+  fetch('/static/netbox_path/sprite.svg')
+    .then(response => response.text())
+    .then(svgText => {
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+      symbols = svgDoc.querySelectorAll('symbol');
+    });
+
 
   // Initialize the object select box
   netboxObjectSelect = new TomSelect('#netbox-object-select', {
@@ -369,10 +386,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Some stuff is selected. Activate action buttons
       document.getElementById('nbp-delete-selected').disabled = false
       document.getElementById('nbp-edit-selected').disabled = false
+      document.getElementById('nbp-change-icon-selected').disabled = false;
 
-      if (cy.$('node:selected').length > 1) {
+      if (cy.$(':selected').length > 1) {
         document.getElementById('nbp-link-selected').disabled = false
         document.getElementById('nbp-edit-selected').disabled = true
+        document.getElementById('nbp-change-icon-selected').disabled = true;
       } else {
         document.getElementById('nbp-link-selected').disabled = true
       }
@@ -381,6 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('nbp-delete-selected').disabled = true
       document.getElementById('nbp-link-selected').disabled = true
       document.getElementById('nbp-edit-selected').disabled = true
+      document.getElementById('nbp-change-icon-selected').disabled = true;
     }
   }
 
@@ -430,18 +450,15 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           selector: 'node',
           style: {
-            'background-color': 'teal',
-            'label': 'data(label)',
-            'shape': 'roundrectangle',
-            'width': '150',
-            'height': '150',
+            'background-color': 'black',
+            //'label': 'data(label)',
+            'width': '40',
+            'height': '40',
             'text-valign': 'center',
             'text-halign': 'center',
             'text-wrap': 'wrap',
-            "font-size":"12px",
+            "font-size": "10px",
             'color': '#fff',
-            'text-outline-color': 'teal',
-            'text-outline-width': 2
           }
         },
         {
@@ -452,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'target-arrow-color': 'tan',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
+            'label': 'data(label)',
           }
         },
         {
@@ -558,6 +576,41 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('netbox-path')
       initCytoscape(path?.graph)
     })
+
+    cy.nodeHtmlLabel(
+      [
+        {
+          query: "node[object.type='dcim.devices']",
+          tpl: function (data) {
+            return `
+            <div class="node">
+              <span class="node-icon rounded-circle">
+                <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
+              </span>
+              <span class="node-label">${data.label}</span>
+            </div>
+            `
+          },
+        },
+      ],
+      {
+        enablePointerEvents: true
+      }
+    );
+
+
+    var defaults = {
+      container: '#nbp-navigator',
+      viewLiveFramerate: 0,
+      thumbnailEventFramerate: 30,
+      thumbnailLiveFramerate: false,
+      dblClickDelay: 200,
+      removeCustomContainer: false,
+      rerenderDelay: 100
+    };
+
+    var nav = cy.navigator(defaults);
+    cy.fit();
   }
 
   // Fetch data from server and initialise Cytoscape
@@ -589,25 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       Promise.all([fetchData]).then(promises => {
         var deviceData = promises[0]
-        var deviceLabel = `${objectTypeLabel}`
-
-        // Generate the initial label for the node
-        if (deviceData.display) {
-          deviceLabel += `\nDisplay: ${deviceData.display}`
-          selectedNameAttributes['display'] = true
-        }
-        if (deviceData.device_type) {
-          deviceLabel += `\nDevice type: ${deviceData.device_type.display}`
-          selectedNameAttributes['device_type'] = true
-        }
-        if (deviceData.site) {
-          deviceLabel += `\nSite: ${deviceData.site.display}`
-          selectedNameAttributes['site'] = true
-        }
-        if (deviceData.tenant) {
-          deviceLabel += `\nTenant: ${deviceData.tenant.display}`
-          selectedNameAttributes['tenant'] = true
-        }
 
         // Generate a random id for the new node
         var id = Math.random().toString(36).substring(7)
@@ -616,7 +650,8 @@ document.addEventListener('DOMContentLoaded', () => {
         var newNode = {
           data: {
             id: id,
-            label: deviceLabel,
+            label: deviceData.display,
+            icon: '10021-icon-service-virtual-machine', // TODO: Choose icon based on type
             selectedNameAttributes: selectedNameAttributes,
             object: {
               id: deviceData.id,
@@ -648,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${s.id()}-${id}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: s.id(), target: id } }
+            let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', } }
             added = added.concat(cy.add(edge))
           }
         })
@@ -705,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${a.id()}-${b.id()}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id() } }
+            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', } }
             cy.add(edge)
           }
         })
@@ -760,85 +795,195 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
 
-    // Check if the edit node button is pressed
-    document.getElementById('nbp-edit-selected').addEventListener('click', () => {
-      // Get the selected node
-      var selected = cy.$('node:selected')
+    var selectedIcon = '';
+
+    // Check if the change icon button is pressed
+    document.getElementById('nbp-change-icon-selected').addEventListener('click', () => {
+      var selected = cy.elements(':selected');
       if (selected.length === 0) {
         return
       }
-      var node = selected[0]
-      var objectData = node.data('object')
+      var obj = selected[0]
+      selectedIcon = obj.data('icon');
 
-      // For every key in the objectData, create a checkbox and label
-      var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-      modalNodeAttributesSection.innerHTML = ''
-      for (var key in objectData) {
-        if (objectData[key] === null || objectData[key] === undefined || Object.keys(objectData[key]).length === 0) {
-          continue
+      if (obj.group() == 'nodes') {
+        var modalNodeAttributesSection = document.getElementById('node-icons-to-show')
+        modalNodeAttributesSection.innerHTML = ''
+
+        var searchBar = document.getElementById('nbp-node-icon-search');
+        searchBar.value = '';
+
+        function renderIcons() {
+          modalNodeAttributesSection.innerHTML = '';
+          Array.from(symbols).filter(function (element) { return element.getAttribute('id').includes(searchBar.value); }).forEach((symbol) => {
+            console.log(symbol.id);
+            var svgId = symbol.getAttribute('id');
+  
+            var svgDiv = document.createElement('div');
+            svgDiv.className = 'col-3 col-md-2';
+            svgDiv.id = `node-icon-${svgId}`;
+  
+            var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+            if (svgId === selectedIcon) {
+              svg.classList.add('border');
+              svg.classList.add('border-black');
+              svg.classList.add('rounded');
+            }
+
+            svg.onclick = () => {
+              modalNodeAttributesSection.childNodes.forEach((node) => {
+                node.childNodes.forEach((childNode) => {
+                  childNode.classList.remove('border');
+                  childNode.classList.remove('border-black'); 
+                  childNode.classList.remove('rounded');
+                });
+              });
+              svg.classList.add('border');
+              svg.classList.add('border-black');
+              svg.classList.add('rounded');
+              selectedIcon = svgId;
+            }
+  
+            svg.setAttribute('width', '30');
+            svg.setAttribute('height', '30');
+            svg.setAttribute('viewBox', '0 0 18 18');
+            svg.innerHTML = symbol.innerHTML;
+  
+            svgDiv.appendChild(svg);
+            modalNodeAttributesSection.appendChild(svgDiv);
+          });
         }
 
-        var checkboxDiv = document.createElement('div')
-        checkboxDiv.id = `node-checkbox-${key}`
-        checkboxDiv.className = 'form-check col-md-6'
-
-        var label = document.createElement('label')
-        label.innerText = formatKey(key)
-        label.className = "form-check-label"
-        label.htmlFor = `node-attribute-${key}`
-        checkboxDiv.appendChild(label)
-
-        var checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.className = "form-check-input"
-        if (node.data('selectedNameAttributes')[key] === true) {
-          checkbox.checked = true
-        } else {
-          checkbox.checked = false
+        searchBar.oninput = () => {
+          renderIcons();
         }
-        checkbox.id = `node-attribute-${key}`
 
-        checkboxDiv.appendChild(checkbox)
-        modalNodeAttributesSection.appendChild(checkboxDiv)
+        renderIcons();
+      }
+    })
+
+    document.getElementById('nbp-node-change-icon-save').addEventListener('click', () => {
+      var selected = cy.elements(':selected');
+      if (selected.length === 0) {
+        return
       }
 
+      var obj = selected[0]
+      obj.data('icon', selectedIcon);
+    })
+
+    // Check if the edit node button is pressed
+    document.getElementById('nbp-edit-selected').addEventListener('click', () => {
+      // Get the selected node
+      var selected = cy.elements(':selected');
+      if (selected.length === 0) {
+        return
+      }
+      var obj = selected[0]
+      if (obj.group() == 'nodes') {
+        var objectData = obj.data('object')
+
+        // For every key in the objectData, create a checkbox and label
+        var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
+        modalNodeAttributesSection.innerHTML = ''
+        for (var key in objectData) {
+          if (objectData[key] === null || objectData[key] === undefined || Object.keys(objectData[key]).length === 0) {
+            continue
+          }
+
+          var checkboxDiv = document.createElement('div')
+          checkboxDiv.id = `node-checkbox-${key}`
+          checkboxDiv.className = 'form-check col-md-6'
+
+          var label = document.createElement('label')
+          label.innerText = formatKey(key)
+          label.className = "form-check-label"
+          label.htmlFor = `node-attribute-${key}`
+          checkboxDiv.appendChild(label)
+
+          var checkbox = document.createElement('input')
+          checkbox.type = 'checkbox'
+          checkbox.className = "form-check-input"
+          if (obj.data('selectedNameAttributes')[key] === true) {
+            checkbox.checked = true
+          } else {
+            checkbox.checked = false
+          }
+          checkbox.id = `node-attribute-${key}`
+
+          checkboxDiv.appendChild(checkbox)
+          modalNodeAttributesSection.appendChild(checkboxDiv)
+        }
+      } else if (obj.group() == 'edges') {
+        var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
+        modalNodeAttributesSection.innerHTML = ''
+
+        var inputDiv = document.createElement('div');
+        inputDiv.id = `edge-label-input-div`;
+        inputDiv.className = 'form-group col-md-12';
+
+        var label = document.createElement('label');
+        label.innerText = 'Label';
+        label.htmlFor = `edge-label-input`;
+        inputDiv.appendChild(label);
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control';
+        input.id = `edge-label-input`;
+        if (obj.data('label') !== undefined) {
+          input.value = obj.data('label');
+        }
+
+        inputDiv.appendChild(input);
+        modalNodeAttributesSection.appendChild(inputDiv);
+      }
     })
 
     // Check if the modal save button is pressed
     document.getElementById('nbp-node-edit-save').addEventListener('click', () => {
       // Get the selected node
-      var selected = cy.$('node:selected')
+      var selected = cy.$(':selected')
       if (selected.length === 0) {
         return
       }
-      var node = selected[0]
-      var objectData = node.data('object')
-      var selectedNameAttributes = {}
-      var label = `${node.data('object').type}`
+      var obj = selected[0]
 
-      // Get the values submitted from the modal
-      var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-      var checkboxes = modalNodeAttributesSection.querySelectorAll('.form-check-input')
-      for (var i = 0; i < checkboxes.length; i++) {
-        var checkbox = checkboxes[i]
-        var key = checkbox.id.split('-')[2]
+      if (obj.group() == 'nodes') {
+        var objectData = obj.data('object')
+        var selectedNameAttributes = {}
+        var label = `${obj.data('object').type}`
 
-        if (checkbox.checked) {
-          // Check if the objectData is an object
-          if (typeof objectData[key] === 'object') {
-            if (!objectData[key].display) {
-              label += `\n${formatKey(key)}: ${objectData[key].label}`
+        // Get the values submitted from the modal
+        var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
+        var checkboxes = modalNodeAttributesSection.querySelectorAll('.form-check-input')
+        for (var i = 0; i < checkboxes.length; i++) {
+          var checkbox = checkboxes[i]
+          var key = checkbox.id.split('-')[2]
+
+          if (checkbox.checked) {
+            // Check if the objectData is an object
+            if (typeof objectData[key] === 'object') {
+              if (!objectData[key].display) {
+                label += `\n${formatKey(key)}: ${objectData[key].label}`
+              } else {
+                label += `\n${formatKey(key)}: ${objectData[key].display}`
+              }
             } else {
-              label += `\n${formatKey(key)}: ${objectData[key].display}`
+              label += `\n${formatKey(key)}: ${objectData[key]}`
             }
-          } else {
-            label += `\n${formatKey(key)}: ${objectData[key]}`
+            selectedNameAttributes[key] = true
           }
-          selectedNameAttributes[key] = true
         }
+        obj.data('label', label)
+        obj.data('selectedNameAttributes', selectedNameAttributes)
+      } else if (obj.group() == 'edges') {
+        var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
+        var input = modalNodeAttributesSection.querySelector('.form-control')
+        console.log(input.value);
+        obj.data('label', input.value)
       }
-      node.data('label', label)
-      node.data('selectedNameAttributes', selectedNameAttributes)
     })
 
     // Get the value of the object type when the user selects it

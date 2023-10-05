@@ -9,9 +9,11 @@ rm -rf dist/assets/*
 npm run build && \
   mkdir -p $LOCAL_DIR
   mkdir -p $PLUGIN_DIR
-  
+
+  cp -v dist/assets/sprite.*.svg  $LOCAL_DIR/sprite.svg && \
   cp -v dist/assets/index.*.js  $LOCAL_DIR/index.js && \
   cp -v dist/assets/index.*.css $LOCAL_DIR/index.css && \
 
+  cp -v dist/assets/sprite.*.svg  $PLUGIN_DIR/sprite.svg && \
   cp -v dist/assets/index.*.js  $PLUGIN_DIR/index.js && \
   cp -v dist/assets/index.*.css $PLUGIN_DIR/index.css
