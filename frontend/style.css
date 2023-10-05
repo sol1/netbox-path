@@ -37,6 +37,12 @@
   align-items: center;
 }
 
+.selected {
+  background: #f00 !important;
+  border: 1px solid #f00 !important;
+  color: white;
+}
+
 .node-icon {
   display: inline-flex;
   flex-direction: column;
@@ -48,6 +54,10 @@
   background: #ffffff;
   margin-top: 16px;
   border: 1px solid gray;
+}
+
+.node-icon:hover {
+  background: #f0f0f0;
 }
 
 .node-label {

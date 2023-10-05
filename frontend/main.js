@@ -586,16 +586,29 @@ document.addEventListener('DOMContentLoaded', () => {
         cy.nodeHtmlLabel(
           [
             {
-              query: "node[object.type='dcim.devices']",
+              query: "node",
               tpl: function (data) {
                 return `
-            <div class="node">
-              <span class="node-icon rounded-circle">
-                <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
-              </span>
-              <span class="node-label">${data.label}</span>
-            </div>
-            `
+                  <div class="node">
+                    <span class="node-icon rounded-circle">
+                      <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
+                    </span>
+                    <span class="node-label">${data.label}</span>
+                  </div>
+              `
+              },
+            },
+            {
+              query: "node:selected",
+              tpl: function (data) {
+                return `
+                  <div class="node">
+                    <span class="node-icon rounded-circle selected">
+                      <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
+                    </span>
+                    <span class="node-label">${data.label}</span>
+                  </div>
+              `
               },
             },
           ],
@@ -689,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
               var newEdgeId = `edge-${s.id()}-${id}`
               if (cy.$id(newEdgeId).length === 0) {
                 console.log("Adding new edge " + newEdgeId)
-                let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid', color: 'tan' } }
+                let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid', color: '#999999' } }
                 added = added.concat(cy.add(edge))
               }
             })
@@ -746,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
               var newEdgeId = `edge-${a.id()}-${b.id()}`
               if (cy.$id(newEdgeId).length === 0) {
                 console.log("Adding new edge " + newEdgeId)
-                let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', style: 'solid', color: 'tan' } }
+                let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', style: 'solid', color: '#999999' } }
                 cy.add(edge)
               }
             })
