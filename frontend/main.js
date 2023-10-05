@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
           data: {
             id: id,
             label: deviceData.display,
-            icon: '10021-icon-service-virtual-machine', // TODO: Choose icon based on type
+            icon: chooseIcon(objectTypeLabel),
             selectedNameAttributes: selectedNameAttributes,
             object: {
               id: deviceData.id,
@@ -818,7 +818,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderIcons() {
           modalNodeAttributesSection.innerHTML = '';
           Array.from(symbols).filter(function (element) { return element.getAttribute('id').includes(searchBar.value); }).forEach((symbol) => {
-            console.log(symbol.id);
             var svgId = symbol.getAttribute('id');
 
             var svgDiv = document.createElement('div');
@@ -864,6 +863,27 @@ document.addEventListener('DOMContentLoaded', () => {
         renderIcons();
       }
     })
+
+    function chooseIcon(type) {
+      switch(type) {
+        case 'dcim.devices':
+          return '10855-icon-service-module';
+        case 'dcim.interfaces':
+          return '10854-icon-service-media';
+        case 'ipam.vlans':
+          return '10853-icon-service-backlog';
+        case 'dcim.racks':
+          return '10852-icon-service-workflow';
+        case 'dcim.regions':
+          return '10851-icon-service-workbooks';
+        case 'dcim.sites':
+          return '10850-icon-service-web-test';
+        case 'tenancy.tenants':
+          return '10849-icon-service-web-slots';
+        case 'virtualization.virtual-machines':
+          return '10848-icon-service-website-staging';
+      }
+    }
 
     document.getElementById('nbp-node-change-icon-save').addEventListener('click', () => {
       var selected = cy.elements(':selected');
