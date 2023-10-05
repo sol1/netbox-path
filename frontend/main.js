@@ -14,6 +14,8 @@ var qureyFilters = []
 var filters = []
 var symbols = []
 
+var modalOpen = false;
+
 document.addEventListener('DOMContentLoaded', () => {
   navigator(cytoscape);
   nodeHtmlLabel(cytoscape);
@@ -371,8 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // }
 
   const deleteSelectedNodes = () => {
-    var removed = cy.$(':selected').remove()
-
+    if (!modalOpen) {
+      var removed = cy.$(':selected').remove()
+    }
     // writeNodeSelect()
     // if (removed.length > 0) {
     //   cy.fit()
@@ -760,6 +763,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
 
+    document.addEventListener('hidden.bs.modal', event => { 
+      modalOpen = false;
+    })
+
     // Check if the filter show/hide button is pressed
     document.getElementById('netbox-object-filter-showhide').addEventListener('click', () => {
       // Toggle the visibility of the filters
@@ -807,6 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       var obj = selected[0]
       selectedIcon = obj.data('icon');
+      modalOpen = true;
 
       if (obj.group() == 'nodes') {
         var modalNodeAttributesSection = document.getElementById('node-icons-to-show')
@@ -902,6 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (selected.length === 0) {
         return
       }
+      modalOpen = true;
       var obj = selected[0]
       if (obj.group() == 'nodes') {
         var objectData = obj.data('object')
