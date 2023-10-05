@@ -476,6 +476,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'curve-style': 'bezier',
                 'line-style': 'data(style)',
                 'label': 'data(label)',
+                'font-size': '10px',
+                'edge-text-rotation': 'autorotate',
               }
             },
             {
