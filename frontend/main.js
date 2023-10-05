@@ -6,6 +6,7 @@ import cytoscape from 'cytoscape';
 import navigator from 'cytoscape-navigator';
 import nodeHtmlLabel from 'cytoscape-node-html-label';
 import TomSelect from 'tom-select';
+import html2canvas from 'html2canvas';
 
 var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal, authToken, currUser
 var queryUrl = '/api/dcim/devices/?limit=100'
@@ -465,8 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
           selector: 'edge',
           style: {
             'width': '4',
-            'line-color': 'tan',
-            'target-arrow-color': 'tan',
+            'line-color': 'data(color)',
+            'target-arrow-color': 'data(color)',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'line-style': 'data(style)',
@@ -684,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${s.id()}-${id}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid' } }
+            let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid', color: 'tan' } }
             added = added.concat(cy.add(edge))
           }
         })
@@ -741,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${a.id()}-${b.id()}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', style: 'solid' } }
+            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', style: 'solid', color: 'tan' } }
             cy.add(edge)
           }
         })
@@ -819,11 +820,11 @@ document.addEventListener('DOMContentLoaded', () => {
           Array.from(symbols).filter(function (element) { return element.getAttribute('id').includes(searchBar.value); }).forEach((symbol) => {
             console.log(symbol.id);
             var svgId = symbol.getAttribute('id');
-  
+
             var svgDiv = document.createElement('div');
             svgDiv.className = 'col-3 col-md-2';
             svgDiv.id = `node-icon-${svgId}`;
-  
+
             var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
             if (svgId === selectedIcon) {
@@ -836,7 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
               modalNodeAttributesSection.childNodes.forEach((node) => {
                 node.childNodes.forEach((childNode) => {
                   childNode.classList.remove('border');
-                  childNode.classList.remove('border-black'); 
+                  childNode.classList.remove('border-black');
                   childNode.classList.remove('rounded');
                 });
               });
@@ -845,12 +846,12 @@ document.addEventListener('DOMContentLoaded', () => {
               svg.classList.add('rounded');
               selectedIcon = svgId;
             }
-  
+
             svg.setAttribute('width', '30');
             svg.setAttribute('height', '30');
             svg.setAttribute('viewBox', '0 0 18 18');
             svg.innerHTML = symbol.innerHTML;
-  
+
             svgDiv.appendChild(svg);
             modalNodeAttributesSection.appendChild(svgDiv);
           });
@@ -965,9 +966,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         typeDiv.appendChild(typeSelect);
+
+        var colorDiv = document.createElement('div');
+        colorDiv.id = `edge-color-input-div`;
+        colorDiv.className = 'form-group col-md-12';
+
+        var colorLabel = document.createElement('label');
+        colorLabel.innerText = 'Color';
+        colorLabel.htmlFor = `edge-color-input`;
+        colorDiv.appendChild(colorLabel);
+
+        var colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.className = 'form-control form-control-color';
+        colorInput.id = `edge-color-input`;
+        if (obj.data('color') !== undefined) {
+          colorInput.value = obj.data('color');
+        }
+
+        colorDiv.appendChild(colorInput);
+
         modalNodeAttributesSection.appendChild(inputDiv);
         modalNodeAttributesSection.appendChild(typeDiv);
-
+        modalNodeAttributesSection.appendChild(colorDiv);
       }
     })
 
@@ -1012,14 +1033,29 @@ document.addEventListener('DOMContentLoaded', () => {
         var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
         var input = modalNodeAttributesSection.querySelector('.form-control')
         var typeSelect = modalNodeAttributesSection.querySelector('.form-select');
+        var colorInput = modalNodeAttributesSection.querySelector('.form-control-color');
         obj.data('style', typeSelect.value);
         obj.data('label', input.value)
+        obj.data('color', colorInput.value);
       }
     })
 
     // Get the value of the object type when the user selects it
     document.getElementById('netbox-object-type-select').addEventListener('change', function () {
       changeFilters()
+    })
+
+    document.getElementById('nbp-screenshot-selected').addEventListener('click', () => {
+      var navigatorContainer = document.getElementById('nbp-navigator');
+      navigatorContainer.style.display = 'none';
+      html2canvas(document.getElementById('nbp-cy')).then(function (canvas) {
+        var anchorTag = document.createElement("a");
+        anchorTag.download = "netbox-path.jpg";
+        anchorTag.href = canvas.toDataURL();
+        anchorTag.target = '_blank';
+        anchorTag.click();
+      })
+      navigatorContainer.style.display = 'block';
     })
   });
 })

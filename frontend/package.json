@@ -15,6 +15,7 @@
     "cytoscape": "^3.22.1",
     "cytoscape-navigator": "^2.0.2",
     "cytoscape-node-html-label": "^1.2.2",
+    "html2canvas": "^1.4.1",
     "microplugin": "^0.0.3",
     "sifter": "^0.0.5",
     "tom-select": "^2.1.0"
