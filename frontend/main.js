@@ -1,5 +1,5 @@
 import './style.css'
-import spriteUrl from './sprite.svg'
+import './sprite.svg'
 import "cytoscape-navigator/cytoscape.js-navigator.css";
 
 import cytoscape from 'cytoscape';
