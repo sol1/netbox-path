@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'target-arrow-color': 'tan',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
+            'line-style': 'data(style)',
             'label': 'data(label)',
           }
         },
@@ -683,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${s.id()}-${id}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', } }
+            let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid' } }
             added = added.concat(cy.add(edge))
           }
         })
@@ -740,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
           var newEdgeId = `edge-${a.id()}-${b.id()}`
           if (cy.$id(newEdgeId).length === 0) {
             console.log("Adding new edge " + newEdgeId)
-            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', } }
+            let edge = { data: { id: newEdgeId, source: a.id(), target: b.id(), label: '', style: 'solid' } }
             cy.add(edge)
           }
         })
@@ -937,7 +938,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         inputDiv.appendChild(input);
+
+        let options = ['solid', 'dotted', 'dashed'];
+
+
+        var typeDiv = document.createElement('div');
+        typeDiv.id = `edge-type-input-div`;
+        typeDiv.className = 'form-group col-md-12';
+
+        var typeLabel = document.createElement('label');
+        typeLabel.innerText = 'Type';
+        typeLabel.htmlFor = `edge-type-input`;
+        typeDiv.appendChild(typeLabel);
+
+        var typeSelect = document.createElement('select');
+        typeSelect.className = 'form-select';
+
+        for (var i = 0; i < options.length; i++) {
+          var option = document.createElement("option");
+          if (obj.data('style') !== undefined && obj.data('style') === options[i]) {
+            option.selected = true;
+          }
+          option.value = options[i];
+          option.text = options[i];
+          typeSelect.appendChild(option);
+        }
+
+        typeDiv.appendChild(typeSelect);
         modalNodeAttributesSection.appendChild(inputDiv);
+        modalNodeAttributesSection.appendChild(typeDiv);
+
       }
     })
 
@@ -981,7 +1011,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (obj.group() == 'edges') {
         var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
         var input = modalNodeAttributesSection.querySelector('.form-control')
-        console.log(input.value);
+        var typeSelect = modalNodeAttributesSection.querySelector('.form-select');
+        obj.data('style', typeSelect.value);
         obj.data('label', input.value)
       }
     })
