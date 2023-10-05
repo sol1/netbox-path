@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='netbox_path',
-    version='0.2.7',
+    version='0.2.8',
     description='Create visual and queryable maps of logical paths within your infrastructure',
     install_requires=[],
     url='https://gitlab.sol1.net/SOL1/netbox-path',
