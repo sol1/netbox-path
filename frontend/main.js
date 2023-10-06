@@ -14,6 +14,8 @@ var qureyFilters = []
 var filters = []
 var symbols = []
 
+var savedData = {}
+
 var modalOpen = false;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,9 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const parser = new DOMParser();
       const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
       symbols = svgDoc.querySelectorAll('symbol');
-
-
-
 
       // Initialize the object select box
       netboxObjectSelect = new TomSelect('#netbox-object-select', {
@@ -339,18 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const saveState = () => {
         var graphData = cy.json();
-        delete graphData['data'];
-        delete graphData['pan'];
-        delete graphData['zoom'];
-        delete graphData['style'];
-        delete graphData['maxZoom'];
-        delete graphData['minZoom'];
-        delete graphData['renderer'];
-        delete graphData['panningEnabled'];
-        delete graphData['zoomingEnabled'];
-        delete graphData['userPanningEnabled'];
-        delete graphData['userZoomingEnabled'];
-        delete graphData['boxSelectionEnabled'];
 
         fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`, {
           method: 'PATCH',
@@ -364,23 +351,16 @@ document.addEventListener('DOMContentLoaded', () => {
           credentials: 'omit'
         })
           .then((response) => response.json())
-          .then((json) => console.log('Saved', json));
+          .then((json) => {
+            console.log('Saved', json)
+            savedData = cy.json()['elements']
+          });
       }
-
-      // const emptyNodeSelect = () => {
-      //   var ele = document.getElementById('nbp-node-select')
-      //   ele.innerHTML = ''
-      //   return ele
-      // }
 
       const deleteSelectedNodes = () => {
         if (!modalOpen) {
           var removed = cy.$(':selected').remove()
         }
-        // writeNodeSelect()
-        // if (removed.length > 0) {
-        //   cy.fit()
-        // }
       }
 
       // Change what buttons are active based on the selected node
@@ -476,6 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'curve-style': 'bezier',
                 'line-style': 'data(style)',
                 'label': 'data(label)',
+                'font-size': '10px',
+                'edge-text-rotation': 'autorotate',
               }
             },
             {
@@ -546,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (graph) {
           // Overlay data from server
           cy.json(graph)
+          savedData = cy.json()['elements']
         }
 
         cy.ready(() => {
@@ -590,6 +573,9 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 return `
                   <div class="node">
+                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${data.objLabel}">
+                      <span class="mdi mdi-dots-horizontal-circle-outline icon"></span>
+                    </span>
                     <span class="node-icon rounded-circle">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
@@ -603,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 return `
                   <div class="node">
-                    <span class="node-icon rounded-circle selected">
+                    <span class="node-icon rounded-circle node-selected">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
                     <span class="node-label">${data.label}</span>
@@ -670,6 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
               data: {
                 id: id,
                 label: deviceData.display,
+                objLabel: deviceData.display,
                 icon: chooseIcon(objectTypeLabel),
                 selectedNameAttributes: selectedNameAttributes,
                 object: {
@@ -1019,15 +1006,36 @@ document.addEventListener('DOMContentLoaded', () => {
             colorLabel.htmlFor = `edge-color-input`;
             colorDiv.appendChild(colorLabel);
 
-            var colorInput = document.createElement('input');
-            colorInput.type = 'color';
-            colorInput.className = 'form-control form-control-color';
-            colorInput.id = `edge-color-input`;
-            if (obj.data('color') !== undefined) {
-              colorInput.value = obj.data('color');
-            }
+            var colorGroup = document.createElement('div');
+            colorGroup.className = 'input-group';
 
-            colorDiv.appendChild(colorInput);
+            var colorGroupPrepend = document.createElement('div');
+            colorGroupPrepend.className = 'input-group-prepend';
+
+            var colorPicker = document.createElement('input');
+            colorPicker.type = 'color';
+            colorPicker.className = 'input-group-text form-control-color';
+            colorPicker.value = obj.data('color');
+
+            var colorInput = document.createElement('input');
+            colorInput.type = 'text';
+            colorInput.className = 'edge-color-input form-control';
+            colorInput.value = obj.data('color');
+            colorInput.id = `edge-color-input`;
+            colorPicker.addEventListener('input', function () {
+              colorInput.value = colorPicker.value;
+            });
+
+            colorInput.addEventListener('input', function () {
+              colorPicker.value = colorInput.value;
+            });
+
+            colorGroupPrepend.appendChild(colorPicker);
+
+            colorGroup.appendChild(colorGroupPrepend);
+            colorGroup.appendChild(colorInput);
+
+            colorDiv.appendChild(colorGroup);
 
             modalNodeAttributesSection.appendChild(inputDiv);
             modalNodeAttributesSection.appendChild(typeDiv);
@@ -1047,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (obj.group() == 'nodes') {
             var objectData = obj.data('object')
             var selectedNameAttributes = {}
-            var label = `${obj.data('object').type}`
+            var label = ``
 
             // Get the values submitted from the modal
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
@@ -1070,13 +1078,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedNameAttributes[key] = true
               }
             }
-            obj.data('label', label)
+            label = label.substring(1);
+            obj.data('objLabel', label)
             obj.data('selectedNameAttributes', selectedNameAttributes)
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             var input = modalNodeAttributesSection.querySelector('.form-control')
             var typeSelect = modalNodeAttributesSection.querySelector('.form-select');
             var colorInput = modalNodeAttributesSection.querySelector('.form-control-color');
+            var colorInput = modalNodeAttributesSection.querySelector('.edge-color-input');
             obj.data('style', typeSelect.value);
             obj.data('label', input.value)
             obj.data('color', colorInput.value);
@@ -1100,6 +1110,16 @@ document.addEventListener('DOMContentLoaded', () => {
           })
           navigatorContainer.style.display = 'block';
         })
+
+        window.addEventListener('beforeunload', function (event) {
+          if (JSON.stringify(savedData) !== JSON.stringify(cy.json()['elements'])) {
+            event.preventDefault();
+            event.returnValue = '';
+            return 'If you exit all unsaved data will be lost.';
+          }
+        });
+
+        $(function () { $('[data-toggle="popover"]').popover() })
       });
     });
 })
