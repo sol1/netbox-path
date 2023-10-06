@@ -1,10 +1,11 @@
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
-from virtualization.models import VirtualMachine
+from virtualization.models import VirtualMachine, VMInterface
 from tenancy.models import Tenant
 from dcim.models import Device, Rack, Region, Site, Interface
 from tenancy.views import ObjectContactsView
 from ipam.models import VLAN
+from circuits.models import Circuit
 from django.shortcuts import render
 from . import forms, models, tables
 
@@ -55,6 +56,36 @@ class InterfacePaths(generic.ObjectView):
 
     def get_queryset(self, *args, **kwargs):
         return filter_queryset('dcim.interfaces', self.kwargs['pk'])
+    
+@register_model_view(VMInterface, name='vminterface_paths', path='paths')
+class VMInterfacePaths(generic.ObjectView):
+    template_name = 'netbox_path/site.html'
+    tab = ViewTab(
+        label='Paths',
+        badge=lambda x: filter_queryset('virtualization.interfaces', x.pk).count(),
+        hide_if_empty=False
+    )
+
+    def get(self, request, pk):
+        return render(request, self.get_template_name(), {'object': VMInterface.objects.get(pk=int(pk)), 'tab': self.tab, 'table': tables.PathTable(self.get_queryset())})
+
+    def get_queryset(self, *args, **kwargs):
+        return filter_queryset('virtualization.interfaces', self.kwargs['pk'])
+    
+@register_model_view(Circuit, name='circuit_paths', path='paths')
+class CircuitPaths(generic.ObjectView):
+    template_name = 'netbox_path/site.html'
+    tab = ViewTab(
+        label='Paths',
+        badge=lambda x: filter_queryset('circuits.circuits', x.pk).count(),
+        hide_if_empty=False
+    )
+
+    def get(self, request, pk):
+        return render(request, self.get_template_name(), {'object': Circuit.objects.get(pk=int(pk)), 'tab': self.tab, 'table': tables.PathTable(self.get_queryset())})
+
+    def get_queryset(self, *args, **kwargs):
+        return filter_queryset('circuits.circuits', self.kwargs['pk'])
     
 @register_model_view(VLAN, name='vlan_paths', path='paths')
 class VLANPath(generic.ObjectView):

@@ -879,6 +879,10 @@ document.addEventListener('DOMContentLoaded', () => {
               return '10855-icon-service-module';
             case 'dcim.interfaces':
               return '10854-icon-service-media';
+            case 'virtualization.interfaces':
+              return '10245-icon-service-key-vaults';
+            case 'circuits.circuits':
+              return '10079-icon-service-expressroute-circuits';
             case 'ipam.vlans':
               return '10853-icon-service-backlog';
             case 'dcim.racks':
