@@ -21,6 +21,17 @@ class PathViewSet(NetBoxModelViewSet):
         serializer = PathSerializer(filter_queryset('dcim.devices', None), many=True, context={'request': request})
         return Response(serializer.data)
     
+    # Interface objects
+    @action(detail=False, methods=["get"], url_path=r'dcim/interfaces/(?P<pk>[^/.]+)')
+    def interface(self, request, pk=None):
+        serializer = PathSerializer(filter_queryset('dcim.interfaces', pk), many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=["get"], url_path=r'dcim/interfaces')
+    def interfaces(self, request):
+        serializer = PathSerializer(filter_queryset('dcim.interfaces', None), many=True, context={'request': request})
+        return Response(serializer.data)
+    
     # VLan objects
 
     @action(detail=False, methods=["get"], url_path=r'ipam/vlans/(?P<pk>[^/.]+)')

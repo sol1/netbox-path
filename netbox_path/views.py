@@ -2,7 +2,7 @@ from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
 from virtualization.models import VirtualMachine
 from tenancy.models import Tenant
-from dcim.models import Device, Rack, Region, Site
+from dcim.models import Device, Rack, Region, Site, Interface
 from tenancy.views import ObjectContactsView
 from ipam.models import VLAN
 from django.shortcuts import render
@@ -40,6 +40,21 @@ class DevicePaths(generic.ObjectView):
 
     def get_queryset(self, *args, **kwargs):
         return filter_queryset('dcim.devices', self.kwargs['pk'])
+    
+@register_model_view(Interface, name='interface_paths', path='paths')
+class InterfacePaths(generic.ObjectView):
+    template_name = 'netbox_path/site.html'
+    tab = ViewTab(
+        label='Paths',
+        badge=lambda x: filter_queryset('dcim.interfaces', x.pk).count(),
+        hide_if_empty=False
+    )
+
+    def get(self, request, pk):
+        return render(request, self.get_template_name(), {'object': Interface.objects.get(pk=int(pk)), 'tab': self.tab, 'table': tables.PathTable(self.get_queryset())})
+
+    def get_queryset(self, *args, **kwargs):
+        return filter_queryset('dcim.interfaces', self.kwargs['pk'])
     
 @register_model_view(VLAN, name='vlan_paths', path='paths')
 class VLANPath(generic.ObjectView):
