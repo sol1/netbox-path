@@ -1013,15 +1013,36 @@ document.addEventListener('DOMContentLoaded', () => {
             colorLabel.htmlFor = `edge-color-input`;
             colorDiv.appendChild(colorLabel);
 
-            var colorInput = document.createElement('input');
-            colorInput.type = 'color';
-            colorInput.className = 'form-control form-control-color';
-            colorInput.id = `edge-color-input`;
-            if (obj.data('color') !== undefined) {
-              colorInput.value = obj.data('color');
-            }
+            var colorGroup = document.createElement('div');
+            colorGroup.className = 'input-group';
 
-            colorDiv.appendChild(colorInput);
+            var colorGroupPrepend = document.createElement('div');
+            colorGroupPrepend.className = 'input-group-prepend';
+
+            var colorPicker = document.createElement('input');
+            colorPicker.type = 'color';
+            colorPicker.className = 'input-group-text form-control-color';
+            colorPicker.value = obj.data('color');
+
+            var colorInput = document.createElement('input');
+            colorInput.type = 'text';
+            colorInput.className = 'edge-color-input form-control';
+            colorInput.value = obj.data('color');
+            colorInput.id = `edge-color-input`;
+            colorPicker.addEventListener('input', function() {
+              colorInput.value = colorPicker.value;
+            });
+            
+            colorInput.addEventListener('input', function() {
+              colorPicker.value = colorInput.value;
+            });
+
+            colorGroupPrepend.appendChild(colorPicker);
+
+            colorGroup.appendChild(colorGroupPrepend);
+            colorGroup.appendChild(colorInput);
+
+            colorDiv.appendChild(colorGroup);
 
             modalNodeAttributesSection.appendChild(inputDiv);
             modalNodeAttributesSection.appendChild(typeDiv);
@@ -1072,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
             var input = modalNodeAttributesSection.querySelector('.form-control')
             var typeSelect = modalNodeAttributesSection.querySelector('.form-select');
             var colorInput = modalNodeAttributesSection.querySelector('.form-control-color');
+            var colorInput = modalNodeAttributesSection.querySelector('.edge-color-input');
             obj.data('style', typeSelect.value);
             obj.data('label', input.value)
             obj.data('color', colorInput.value);
