@@ -339,18 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const saveState = () => {
         var graphData = cy.json();
-        delete graphData['data'];
-        delete graphData['pan'];
-        delete graphData['zoom'];
-        delete graphData['style'];
-        delete graphData['maxZoom'];
-        delete graphData['minZoom'];
-        delete graphData['renderer'];
-        delete graphData['panningEnabled'];
-        delete graphData['zoomingEnabled'];
-        delete graphData['userPanningEnabled'];
-        delete graphData['userZoomingEnabled'];
-        delete graphData['boxSelectionEnabled'];
 
         fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`, {
           method: 'PATCH',

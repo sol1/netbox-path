@@ -5,6 +5,7 @@
 }
 
 #nbp-navigator {
+  font-size: 0;
   min-height: 25%;
   min-width: 25%;
   bottom: 0;
