@@ -14,6 +14,8 @@ var qureyFilters = []
 var filters = []
 var symbols = []
 
+var savedData = {}
+
 var modalOpen = false;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,9 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const parser = new DOMParser();
       const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
       symbols = svgDoc.querySelectorAll('symbol');
-
-
-
 
       // Initialize the object select box
       netboxObjectSelect = new TomSelect('#netbox-object-select', {
@@ -352,23 +351,16 @@ document.addEventListener('DOMContentLoaded', () => {
           credentials: 'omit'
         })
           .then((response) => response.json())
-          .then((json) => console.log('Saved', json));
+          .then((json) => {
+            console.log('Saved', json)
+            savedData = cy.json()['elements']
+          });
       }
-
-      // const emptyNodeSelect = () => {
-      //   var ele = document.getElementById('nbp-node-select')
-      //   ele.innerHTML = ''
-      //   return ele
-      // }
 
       const deleteSelectedNodes = () => {
         if (!modalOpen) {
           var removed = cy.$(':selected').remove()
         }
-        // writeNodeSelect()
-        // if (removed.length > 0) {
-        //   cy.fit()
-        // }
       }
 
       // Change what buttons are active based on the selected node
@@ -536,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (graph) {
           // Overlay data from server
           cy.json(graph)
+          savedData = cy.json()['elements']
         }
 
         cy.ready(() => {
@@ -1029,11 +1022,11 @@ document.addEventListener('DOMContentLoaded', () => {
             colorInput.className = 'edge-color-input form-control';
             colorInput.value = obj.data('color');
             colorInput.id = `edge-color-input`;
-            colorPicker.addEventListener('input', function() {
+            colorPicker.addEventListener('input', function () {
               colorInput.value = colorPicker.value;
             });
-            
-            colorInput.addEventListener('input', function() {
+
+            colorInput.addEventListener('input', function () {
               colorPicker.value = colorInput.value;
             });
 
@@ -1117,6 +1110,14 @@ document.addEventListener('DOMContentLoaded', () => {
           })
           navigatorContainer.style.display = 'block';
         })
+
+        window.addEventListener('beforeunload', function (event) {
+          if (JSON.stringify(savedData) !== JSON.stringify(cy.json()['elements'])) {
+            event.preventDefault();
+            event.returnValue = '';
+            return 'If you exit all unsaved data will be lost.';
+          }
+        });
 
         $(function () { $('[data-toggle="popover"]').popover() })
       });
