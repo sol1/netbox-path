@@ -37,7 +37,11 @@
   align-items: center;
 }
 
-.selected {
+.popover {
+  white-space: pre-wrap;    
+}
+
+.node-selected {
   background: #f00 !important;
   border: 1px solid #f00 !important;
   color: white;
@@ -56,7 +60,7 @@
   border: 1px solid gray;
 }
 
-.node-icon:hover {
+.node:hover > .node-icon {
   background: #f0f0f0;
 }
 
@@ -67,6 +71,31 @@
   color: black;
   text-transform: uppercase;
   margin-top: 6px;
+}
+
+.node-menu-badge {
+  display: none;
+	position: absolute;
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	margin-left: 32px;
+	margin-top: 12px;
+	box-shadow: 0 0 1px #0000001f,0 1px 1px #0000001f;
+	background: lightgreen;
+	z-index: 999;
+}
+
+.node:hover > .node-menu-badge {
+  display: block;
+}
+
+.node-menu-badge > .icon {
+	color: white;
+	border-radius: 50%;
+	top: -3px;
+	right: -0.5px;
+	position: relative;
 }
 
 /* Tom-Select Styling */

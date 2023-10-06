@@ -592,6 +592,9 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 return `
                   <div class="node">
+                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${data.objLabel}">
+                      <span class="mdi mdi-dots-horizontal-circle-outline icon"></span>
+                    </span>
                     <span class="node-icon rounded-circle">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
@@ -605,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 return `
                   <div class="node">
-                    <span class="node-icon rounded-circle selected">
+                    <span class="node-icon rounded-circle node-selected">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
                     <span class="node-label">${data.label}</span>
@@ -672,6 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
               data: {
                 id: id,
                 label: deviceData.display,
+                objLabel: deviceData.display,
                 icon: chooseIcon(objectTypeLabel),
                 selectedNameAttributes: selectedNameAttributes,
                 object: {
@@ -1049,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (obj.group() == 'nodes') {
             var objectData = obj.data('object')
             var selectedNameAttributes = {}
-            var label = `${obj.data('object').type}`
+            var label = ``
 
             // Get the values submitted from the modal
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
@@ -1072,7 +1076,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedNameAttributes[key] = true
               }
             }
-            obj.data('label', label)
+            label = label.substring(1);
+            obj.data('objLabel', label)
             obj.data('selectedNameAttributes', selectedNameAttributes)
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
@@ -1102,6 +1107,8 @@ document.addEventListener('DOMContentLoaded', () => {
           })
           navigatorContainer.style.display = 'block';
         })
+
+        $(function () { $('[data-toggle="popover"]').popover() })
       });
     });
 })
