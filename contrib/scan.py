@@ -1,10 +1,10 @@
 import requests
 
-OBJECT_ID = 1
+OBJECT_ID = 109
 OBJECT_TYPE = 'dcim.devices'
 
-HOST = 'localhost:8000'
-API_KEY = '5f73f36b40dce5a99ce3bcb0314342ffe2ac5054'
+HOST = 'netbox-path.sol1.net'
+API_KEY = '506f3020a10a35d71ca21939abc67e7e90db493b'
 
 cached_objects = {}
 visited_edges = []
@@ -12,6 +12,7 @@ visited_nodes = []
 visited_graphs = []
 
 affected_objects = []
+affected_paths = []
 
 headers = {
     'Content-Type': 'application/json',
@@ -58,8 +59,11 @@ def check_object(object_id, object_type):
         print(f'Already visited this node using cached response {object_type} {object_id}')
         response = cached_objects[f'{object_type}:{object_id}']
     else:
-        response = requests.get(f'http://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/', headers=headers).json()
-        print(f'Requesting paths for {object_type} {object_id} http://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/')
+        response = requests.get(f'https://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/', headers=headers).json()
+        print(f'Requesting paths for {object_type} {object_id} https://{HOST}/api/plugins/netbox-path/paths/{object_type}/{object_id}/')
+        if object_type == OBJECT_TYPE and object_id == OBJECT_ID:
+            if response['id'] not in affected_paths:
+                affected_paths.append(response['id'])
         cached_objects[f'{object_type}:{object_id}'] = response
     
     object_type = object_type.replace('/', '.')
@@ -76,7 +80,7 @@ def check_object(object_id, object_type):
                 check_edges(node_key, node, object)
 
 def get_contacts():
-    response = requests.get(f'http://{HOST}/api/tenancy/contact-assignments/', headers=headers).json()
+    response = requests.get(f'https://{HOST}/api/tenancy/contact-assignments/', headers=headers).json()
     for object in affected_objects:
         type = object.split(':')[0].rsplit('s', 1)[0]
         id = object.split(':')[1]
@@ -86,9 +90,17 @@ def get_contacts():
                 contact_response = requests.get(assignment['contact']['url'], headers=headers).json()
                 print(f'{type} {id} - Contact {contact_response["name"]} {contact_response["email"]} {contact_response["phone"]}')
     #print(response)
+def get_path_contacts():
+    response = requests.get(f'https://{HOST}/api/tenancy/contact-assignments/', headers=headers).json()
+    for path in visited_graphs:
+        for assignment in response['results']:
+            if assignment['content_type'] == 'netbox_path.path' and assignment['object_id'] == int(path):
+                contact_response = requests.get(assignment['contact']['url'], headers=headers).json()
+                print(f'Path {path} - Contact {contact_response["name"]} {contact_response["email"]} {contact_response["phone"]}')
 
 check_object(OBJECT_ID, OBJECT_TYPE)
-get_contacts()
+#get_contacts()
+get_path_contacts()
 
 print('')
 print(f'Visited graphs: {visited_graphs}')
