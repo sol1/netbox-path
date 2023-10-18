@@ -57,10 +57,10 @@
   justify-content: center;
   align-items: center;
   border-radius: 3px;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: #ffffff;
-  margin-top: 16px;
+  margin-top: 15px;
   border: 1px solid gray;
 }
 
