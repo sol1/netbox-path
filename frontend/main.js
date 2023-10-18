@@ -378,9 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
             {
               query: "node",
               tpl: function (data) {
+                let popoverData = ``;
+                for (var key in data.object) {
+                  if (data.object.hasOwnProperty(key)) {   
+                      popoverData += `${key}: ${data.object[key]}\n`        
+                  }
+              }
                 return `
                   <div class="node">
-                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${data.objLabel}">
+                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${popoverData}">
                       <span class="mdi mdi-dots-horizontal-circle-outline icon"></span>
                     </span>
                     <span class="node-icon rounded-circle">
@@ -472,7 +478,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         var added = []
-        var selectedNameAttributes = {}
 
         // Get the selected value from netbox-object-type-select
         var selectedObjectType = document.getElementById('netbox-object-type-select')
@@ -500,9 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
               id: id,
               label: deviceData.display,
-              objLabel: deviceData.display,
               icon: chooseIcon(objectTypeLabel),
-              selectedNameAttributes: selectedNameAttributes,
               object: {
                 id: deviceData.id,
                 type: objectTypeLabel,
@@ -579,6 +582,8 @@ document.addEventListener('DOMContentLoaded', () => {
           deleteSelectedNodes()
 
         })
+
+        // TODO: Add dropdown for link button
 
         // Add listener for the link button
         document.querySelector('#nbp-link-selected').addEventListener('click', () => {
@@ -747,37 +752,35 @@ document.addEventListener('DOMContentLoaded', () => {
           if (obj.group() == 'nodes') {
             var objectData = obj.data('object')
 
-            // For every key in the objectData, create a checkbox and label
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             modalNodeAttributesSection.innerHTML = ''
+
+            var labelDiv = document.createElement('div');
+            labelDiv.id = `node-label-input-div`;
+            labelDiv.className = 'form-group col-md-12';
+
+            var nodeLabel = document.createElement('label');
+            nodeLabel.innerText = 'Label';
+            nodeLabel.htmlFor = `node-label-input`;
+            labelDiv.appendChild(nodeLabel);
+
+            var labelSelect = document.createElement('select');
+            labelSelect.id = `node-label-input`;
+            labelSelect.className = 'form-select';
+
             for (var key in objectData) {
-              if (objectData[key] === null || objectData[key] === undefined || Object.keys(objectData[key]).length === 0) {
-                continue
+              var option = document.createElement("option");
+              if (obj.data('label') === objectData[key]) {
+                option.selected = true;
               }
-
-              var checkboxDiv = document.createElement('div')
-              checkboxDiv.id = `node-checkbox-${key}`
-              checkboxDiv.className = 'form-check col-md-6'
-
-              var label = document.createElement('label')
-              label.innerText = formatKey(key)
-              label.className = "form-check-label"
-              label.htmlFor = `node-attribute-${key}`
-              checkboxDiv.appendChild(label)
-
-              var checkbox = document.createElement('input')
-              checkbox.type = 'checkbox'
-              checkbox.className = "form-check-input"
-              if (obj.data('selectedNameAttributes')[key] === true) {
-                checkbox.checked = true
-              } else {
-                checkbox.checked = false
-              }
-              checkbox.id = `node-attribute-${key}`
-
-              checkboxDiv.appendChild(checkbox)
-              modalNodeAttributesSection.appendChild(checkboxDiv)
+              option.value = objectData[key];
+              option.text = key;
+              labelSelect.appendChild(option);
             }
+
+            labelDiv.appendChild(labelSelect);
+
+            modalNodeAttributesSection.appendChild(labelDiv)
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             modalNodeAttributesSection.innerHTML = ''
@@ -942,34 +945,11 @@ document.addEventListener('DOMContentLoaded', () => {
           var obj = selected[0]
 
           if (obj.group() == 'nodes') {
-            var objectData = obj.data('object')
-            var selectedNameAttributes = {}
-            var label = ``
-
             // Get the values submitted from the modal
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-            var checkboxes = modalNodeAttributesSection.querySelectorAll('.form-check-input')
-            for (var i = 0; i < checkboxes.length; i++) {
-              var checkbox = checkboxes[i]
-              var key = checkbox.id.split('-')[2]
 
-              if (checkbox.checked) {
-                // Check if the objectData is an object
-                if (typeof objectData[key] === 'object') {
-                  if (!objectData[key].display) {
-                    label += `\n${formatKey(key)}: ${objectData[key].label}`
-                  } else {
-                    label += `\n${formatKey(key)}: ${objectData[key].display}`
-                  }
-                } else {
-                  label += `\n${formatKey(key)}: ${objectData[key]}`
-                }
-                selectedNameAttributes[key] = true
-              }
-            }
-            label = label.substring(1);
-            obj.data('objLabel', label)
-            obj.data('selectedNameAttributes', selectedNameAttributes)
+            var labelType = document.getElementById('node-label-input');
+            obj.data('label', labelType.value)
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show');
 
