@@ -68,6 +68,10 @@ class ImpactAssessment:
         lst = list({i['id']:i for i in reversed(lst)}.values())
         for i, d in enumerate(lst):
             lst[i] = d['object']
+            if 'description' in d:
+                lst[i]['description'] = d['description']
+            else:
+                lst[i]['description'] = ''
             content_type = ContentType.objects.get_for_model(self.get_object(lst[i]))
             assignments = ContactAssignment.objects.filter(object_id=int(lst[i]['id']), content_type=content_type)
             lst[i]['contacts'] = self.parse_contacts(assignments)

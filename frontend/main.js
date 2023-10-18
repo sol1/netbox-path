@@ -380,10 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 let popoverData = ``;
                 for (var key in data.object) {
-                  if (data.object.hasOwnProperty(key)) {   
-                      popoverData += `${key}: ${data.object[key]}\n`        
+                  if (data.object.hasOwnProperty(key)) {
+                    popoverData += `${key}: ${data.object[key]}\n`
                   }
-              }
+                }
                 return `
                   <div class="node">
                     <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${popoverData}">
@@ -780,7 +780,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             labelDiv.appendChild(labelSelect);
 
-            modalNodeAttributesSection.appendChild(labelDiv)
+            var descriptionDiv = document.createElement('div');
+            descriptionDiv.id = `node-description-input-div`;
+            descriptionDiv.className = 'form-group col-md-12';
+
+            var descriptionLabel = document.createElement('label');
+            descriptionLabel.innerText = 'Description';
+            descriptionLabel.htmlFor = `node-description-input`;
+            descriptionDiv.appendChild(descriptionLabel);
+
+            var descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.className = 'form-control';
+            descriptionInput.id = `node-description-input`;
+            if (obj.data('description') !== undefined) {
+              descriptionInput.value = obj.data('description');
+            }
+
+            descriptionDiv.appendChild(descriptionInput);
+
+            modalNodeAttributesSection.appendChild(labelDiv);
+            modalNodeAttributesSection.appendChild(descriptionDiv);
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             modalNodeAttributesSection.innerHTML = ''
@@ -947,9 +967,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (obj.group() == 'nodes') {
             // Get the values submitted from the modal
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-
+            var descriptionInput = modalNodeAttributesSection.querySelector('.form-control');
             var labelType = document.getElementById('node-label-input');
-            obj.data('label', labelType.value)
+
+            obj.data('label', labelType.value);
+            obj.data('description', descriptionInput.value);
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show');
 
