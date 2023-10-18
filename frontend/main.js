@@ -2,7 +2,11 @@ import './style.css'
 import './sprite.svg'
 import "cytoscape-navigator/cytoscape.js-navigator.css";
 
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+
 import cytoscape from 'cytoscape';
+import popper from 'cytoscape-popper';
 import navigator from 'cytoscape-navigator';
 import nodeHtmlLabel from 'cytoscape-node-html-label';
 import html2canvas from 'html2canvas';
@@ -10,12 +14,13 @@ import { changeFilters, selectedObject, formatKey } from './selector.js';
 
 var path, cy, authToken, currUser
 var symbols = []
-
+var tippyDict = {}
 var savedData = {}
 
 var modalOpen = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+  cytoscape.use(popper);
   navigator(cytoscape);
   nodeHtmlLabel(cytoscape);
   // Get the current user from the API
@@ -229,6 +234,48 @@ document.addEventListener('DOMContentLoaded', () => {
         labelButtons(selected)
       }
 
+      let makePopper = node => {
+        let popoverData = ``;
+        for (var key in node.data('object')) {
+          if (node.data('object').hasOwnProperty(key)) {
+            popoverData += `${key}: ${node.data('object')[key]}</br>`
+          }
+        }
+        let url = node.data('object')['url'].replace("/api/", "/");;
+        popoverData += `</br><div class='d-grid'><button class='btn btn-primary btn-sm' onclick='window.open("${url}", "_blank")'>View in Netbox</button></div>`
+        let ref = node.popperRef();
+        let dummyDomEle = document.createElement("div");
+
+        let tip = tippy(dummyDomEle, {
+          getReferenceClientRect: ref.getBoundingClientRect,
+          trigger: "manual",
+
+          content: () => {
+            let content = document.createElement("div");
+            content.innerHTML = popoverData;
+            return content;
+          },
+
+          interactive: true,
+          interactiveBorder: 100,
+          interactiveDebounce: 1000,
+          duration: [500, 1000],
+          offset: [0, 0],
+          appendTo: document.body,
+        });
+        tippyDict[node.id()] = tip;
+
+        cy.nodes().unbind("mouseover");
+        cy.nodes().bind("mouseover", event => {
+          tippyDict[event.target.id()].show();
+        });
+
+        cy.nodes().unbind("mouseout");
+        cy.nodes().bind("mouseout", event => {
+          tippyDict[event.target.id()].hide();
+        });
+      };
+
       // Initialize the cytojs graph
       const initCytoscape = (graph) => {
         // Init empty graph
@@ -378,17 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
             {
               query: "node",
               tpl: function (data) {
-                let popoverData = ``;
-                for (var key in data.object) {
-                  if (data.object.hasOwnProperty(key)) {
-                    popoverData += `${key}: ${data.object[key]}\n`
-                  }
-                }
                 return `
                   <div class="node">
-                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${popoverData}">
-                      <span class="mdi mdi-dots-horizontal-circle-outline icon"></span>
-                    </span>
                     <span class="node-icon rounded-circle">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
@@ -416,6 +454,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         );
 
+        cy.ready(function () {
+          cy.nodes().forEach(node => {
+            makePopper(cy.getElementById(node.data('id')));
+          });
+        });
 
         var defaults = {
           container: '#nbp-navigator',
@@ -530,6 +573,8 @@ document.addEventListener('DOMContentLoaded', () => {
           added = added.concat(
             cy.add(newNode)
           )
+
+          makePopper(cy.getElementById(id));
 
           // Add an edge between all selected nodes and the new node
           cy.$('node:selected').forEach(s => {
@@ -1011,8 +1056,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'If you exit all unsaved data will be lost.';
           }
         });
-
-        $(function () { $('[data-toggle="popover"]').popover() })
       });
     });
 })
