@@ -1,9 +1,18 @@
-from netbox.api.viewsets import NetBoxModelViewSet, BaseViewSet
+from netbox.api.viewsets import NetBoxModelViewSet
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .. import filtersets, models
 from .serializers import PathSerializer
+from .impact import ImpactAssessment
 
+class ImpactViewSet(viewsets.ViewSet):
+    queryset = models.Path.objects.all()
+
+    def list(self, request):
+        impact = ImpactAssessment(request.GET.get('type'), request.GET.get('id'))
+        result = impact.get_impact()
+        return Response(result)
 
 class PathViewSet(NetBoxModelViewSet):
     queryset = models.Path.objects.prefetch_related('tags')
