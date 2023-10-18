@@ -102,6 +102,16 @@
 	position: relative;
 }
 
+.popover-header {
+  border-bottom: none !important;
+  background-color: unset !important;
+  white-space: pre;
+}
+
+.popover {
+  max-width: unset !important;
+}
+
 /* Tom-Select Styling */
 
 /**
