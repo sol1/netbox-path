@@ -103,6 +103,8 @@ class ImpactAssessment:
             if node['data']['object']['id'] == id and node['data']['object']['type'] == type:
                 if not source:
                     node = self.set_node_direction(node, 'downstream')
+                else:
+                    node['data']['object']['direction'] = []
                 self.affected_nodes[path.id].append(node['data'])
                 self.check_edges(node['data']['id'], path, source)
     
