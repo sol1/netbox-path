@@ -13,6 +13,7 @@ import html2canvas from 'html2canvas';
 import { changeFilters, selectedObject, formatKey } from './selector.js';
 
 var path, cy, authToken, currUser
+var locked = false;
 var symbols = []
 var tippyDict = {}
 var savedData = {}
@@ -117,6 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
       // Change what buttons are active based on the selected node
       const toggleButtons = selected => {
         var numSelected = selected.length
+
+        if (locked) {
+          document.getElementById('nbp-lock').disabled = true;
+          document.getElementById('nbp-unlock').disabled = false;
+          document.getElementById('nbp-add-node').disabled = true;
+          document.getElementById('nbp-save').disabled = true;
+        } else {
+          document.getElementById('nbp-lock').disabled = false;
+          document.getElementById('nbp-unlock').disabled = true;
+          document.getElementById('nbp-add-node').disabled = false;
+          document.getElementById('nbp-save').disabled = false;
+        }
 
         if (numSelected > 0) {
           // Some stuff is selected. Activate action buttons
@@ -388,6 +401,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cy.ready(() => {
           // Simplify starting point by unselecting everything
           cy.$('').unselect()
+
+          cy.autoungrabify(true);
+          cy.autounselectify(true);
+          locked = true;
+
           renderButtons()
 
           // writeNodeSelect()
@@ -1031,6 +1049,22 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         })
 
+        document.getElementById('nbp-lock').addEventListener('click', () => {
+          locked = true;
+          cy.autoungrabify(true);
+          cy.autounselectify(true);
+
+          toggleButtons(cy.$(':selected'));
+        });
+
+        document.getElementById('nbp-unlock').addEventListener('click', () => {
+          locked = false;
+          cy.autoungrabify(false);
+          cy.autounselectify(false);
+
+          toggleButtons(cy.$(':selected'));
+        });
+
         // Get the value of the object type when the user selects it
         document.getElementById('netbox-object-type-select').addEventListener('change', function () {
           changeFilters()
@@ -1050,10 +1084,12 @@ document.addEventListener('DOMContentLoaded', () => {
         })
 
         window.addEventListener('beforeunload', function (event) {
-          if (JSON.stringify(savedData) !== JSON.stringify(cy.json()['elements'])) {
-            event.preventDefault();
-            event.returnValue = '';
-            return 'If you exit all unsaved data will be lost.';
+          if (!locked) {
+            if (JSON.stringify(savedData) !== JSON.stringify(cy.json()['elements'])) {
+              event.preventDefault();
+              event.returnValue = '';
+              return 'If you exit all unsaved data will be lost.';
+            }
           }
         });
       });
