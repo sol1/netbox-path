@@ -15,9 +15,11 @@
     "cytoscape": "^3.22.1",
     "cytoscape-navigator": "^2.0.2",
     "cytoscape-node-html-label": "^1.2.2",
+    "cytoscape-popper": "^2.0.0",
     "html2canvas": "^1.4.1",
     "microplugin": "^0.0.3",
     "sifter": "^0.0.5",
+    "tippy.js": "^6.3.7",
     "tom-select": "^2.1.0"
   }
 }

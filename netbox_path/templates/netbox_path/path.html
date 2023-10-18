@@ -16,9 +16,9 @@
 	</div>
 	<div class="col-4 d-flex justify-content-end">
 		<div class="btn-group-sm" role="group">
-			<button type="button" class="btn btn-success" id="nbp-screenshot-selected"><span class="mdi mdi-monitor-screenshot"></span> Screenshot</button>
+			<button type="button" class="btn btn-primary" id="nbp-screenshot-selected"><span class="mdi mdi-monitor-screenshot"></span> Screenshot</button>
 			<button id="nbp-change-icon-selected" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#nbp-node-change-icon-modal" disabled><span class="mdi mdi-image"></span> Change Icon</button>
-			<button id="nbp-edit-selected" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#nbp-node-edit-modal" disabled><span class="mdi mdi-pencil"></span> Edit Node</button>
+			<button id="nbp-edit-selected" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#nbp-node-edit-modal" disabled><span class="mdi mdi-pencil"></span> Edit</button>
 			<button type="button" class="btn btn-danger" id="nbp-delete-selected" disabled><span class="mdi mdi-trash-can-outline"></span> Delete</button>
 		</div>
 	</div>
@@ -57,7 +57,17 @@
 		
 		<label id="netbox-object-select-label" for="netbox-object-select" class="form-label h5">Add Object</label>
 		<select id="netbox-object-select"></select>
-		<button type="button" class="btn btn-sm btn-primary mt-2" id="nbp-add-node">Add</button>
+
+		<div class="btn-group">
+			<button type="button" class="btn btn-sm mt-2 btn-primary" id="nbp-add-node">Add</button>
+			<button type="button" class="btn btn-sm mt-2 btn-primary dropdown-toggle dropdown-toggle-split" id="nbp-add-node-dropdown" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+			  <span class="visually-hidden">Toggle Dropdown</span>
+			</button>
+			<ul class="dropdown-menu" id="edge-group-dropdown-menu">
+				{% comment %} The JS will fill this list with options {% endcomment %}
+			</ul>
+		</div>
+		  
 
 		<div id="netbox-object-inspector-container" class="mb-2 mt-2">
 			<button type="button" class="btn btn-sm btn-light" id="netbox-object-inspector-showhide">Show Inspector</button>

@@ -2,23 +2,25 @@ import './style.css'
 import './sprite.svg'
 import "cytoscape-navigator/cytoscape.js-navigator.css";
 
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+
 import cytoscape from 'cytoscape';
+import popper from 'cytoscape-popper';
 import navigator from 'cytoscape-navigator';
 import nodeHtmlLabel from 'cytoscape-node-html-label';
-import TomSelect from 'tom-select';
 import html2canvas from 'html2canvas';
+import { changeFilters, selectedObject, formatKey } from './selector.js';
 
-var path, cy, objectProperties, netboxObjectSelect, selectedObject, queryVal, authToken, currUser
-var queryUrl = '/api/dcim/devices/?limit=100'
-var qureyFilters = []
-var filters = []
+var path, cy, authToken, currUser
 var symbols = []
-
+var tippyDict = {}
 var savedData = {}
 
 var modalOpen = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+  cytoscape.use(popper);
   navigator(cytoscape);
   nodeHtmlLabel(cytoscape);
   // Get the current user from the API
@@ -77,259 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
       symbols = svgDoc.querySelectorAll('symbol');
 
       // Initialize the object select box
-      netboxObjectSelect = new TomSelect('#netbox-object-select', {
-        valueField: 'id',
-        labelField: 'display',
-        searchField: 'display',
-        options: [],
-        preload: true,
-        create: false,
-        load: function (query, callback) {
-          fetch(buildQuery())
-            .then(response => response.json())
-            .then(data => {
-              var options = data.results
-              callback(options)
-            }).catch(error => {
-              console.log(error)
-            })
-        },
-        render: {
-          option: function (item, escape) {
-            var objectDetails = ''
-            for (var key in item) {
-              if (item[key] !== null && typeof item[key] === 'object' && "url" in item[key]) {
-                objectDetails += `<div class="col">${escape(formatKey(key))}: <span class="text-muted">${item[key].display}</span></div>`
-              }
-            }
-            return `<div class="d-flex">
-                  <div class="mb-1">
-                    <p class="h5">${escape(item.display)}</p>
-                    <div class="container">
-                      <div class="row">
-                        ${objectDetails}
-                      </div>
-                    </div>
-                  </div>
-                </div>`;
-          },
-        },
-        onChange: function (value) {
-          updateSelectedObject(value)
-        },
-        onType: function (str) {
-          queryVal = str
-        }
-      });
 
-      // Update the selected object when the select changes
-      const updateQueryBase = (newBase) => {
-        queryUrl = `/api/${newBase}/?limit=100`
-      }
-
-      // Update the query url with the current filters
-      const updateQueryFilters = (object, filterValue) => {
-        // If the filterValue is empty, remove the filter from the query
-        if (filterValue === '') {
-          qureyFilters = qureyFilters.filter(filter => filter.object !== object)
-        } else {
-          // We do manual object name comparisons here because sometimes the object name is different than the query name
-          if (object === 'device_role') {
-            object = 'role'
-          }
-          // If the object is already in the query, update the filter value
-          var filter = qureyFilters.find(filter => filter.object === object)
-          if (filter) {
-            filter.filterValue = filterValue
-          } else {
-            qureyFilters.push({ object: object, filterValue: filterValue })
-          }
-        }
-        updateObjectSelect()
-      }
-
-      // Reset the query filters array
-      const resetQueryFilters = () => {
-        qureyFilters = []
-      }
-
-      // Build the query URL with the current filters
-      const buildQuery = () => {
-        var query = queryUrl
-        if (qureyFilters.length > 0) {
-          query += '&'
-          qureyFilters.forEach(filter => {
-            query += `${filter.object}_id=${filter.filterValue}&`
-            // If it is the last filter, remove the trailing &
-            if (filter === qureyFilters[qureyFilters.length - 1]) {
-              query = query.slice(0, -1)
-            }
-          })
-        }
-        // If the user typed in a search value, add it to the query
-        if (queryVal) {
-          query += `&q=${queryVal}`
-        }
-        return query
-      }
-
-      // Update the object select options
-      const updateObjectSelect = () => {
-        queryVal = ''
-        netboxObjectSelect.clear(true)
-        netboxObjectSelect.clearOptions()
-        netboxObjectSelect.load(buildQuery())
-        netboxObjectSelect.refreshOptions(false)
-      }
-
-      // Update the selected object with the given value from the object select
-      const updateSelectedObject = (object) => {
-        selectedObject = object
-      }
-
-      // Function to format the key for display
-      const formatKey = (key) => {
-        var keyParts = key.split('_')
-        for (var i = 0; i < keyParts.length; i++) {
-          keyParts[i] = keyParts[i].charAt(0).toUpperCase() + keyParts[i].slice(1)
-        }
-        return keyParts.join(' ')
-      }
-
-      // Function to create the new select element for the object type
-      const createFilterSelectElement = (elementId, key) => {
-        // Create a label for the select element
-        var deviceTypeLabel = document.createElement('label')
-        deviceTypeLabel.setAttribute('for', elementId)
-        deviceTypeLabel.innerHTML = `Filter by: ${formatKey(key)}`
-        document.getElementById('netbox-object-select-filter').appendChild(deviceTypeLabel)
-
-        // Create a new select element for the device type
-        var deviceTypeSelect = document.createElement('select')
-        deviceTypeSelect.setAttribute('id', elementId)
-
-        // Append the select element to the page
-        document.getElementById('netbox-object-select-filter').appendChild(deviceTypeSelect)
-      }
-
-      // Function to create the filter select elements for the selected object type
-      const createFilterSelect = () => {
-        if (objectProperties) {
-          var object = objectProperties
-        } else {
-          return
-        }
-        // Make a new filter select element for each property
-        for (var key in object) {
-          // Check if there is a URL in the object
-          if (object[key] !== null && typeof object[key] === 'object' && "url" in object[key]) {
-
-            // Get the url endpoint for the device type after the slash
-            var splitUrl = object[key].url.split('/')
-            var deviceTypeUrl = `/${splitUrl[3]}/${splitUrl[4]}/${splitUrl[5]}`
-
-            // Generate the select box for the device type
-            var deviceTypeSelectId = `${key}-type-filter`
-            createFilterSelectElement(deviceTypeSelectId, key)
-
-            // Initialize the select box for the filter type
-            new TomSelect(`#${deviceTypeSelectId}`, {
-              valueField: 'id',
-              labelField: 'display',
-              searchField: 'display',
-              options: [],
-              preload: true,
-              create: false,
-              load: function (query, callback) {
-                var inputId = this.inputId
-                var url = filters.filter(function (element) { return element.domId == inputId; })[0].url
-                fetch(`${url}/?limit=100&q=${query}`)
-                  .then(response => response.json())
-                  .then(data => {
-                    var options = data.results
-                    callback(options)
-                  }).catch(error => {
-                    console.log(error)
-                  })
-              },
-              render: {
-                option: function (item, escape) {
-                  var objectDetails = ''
-                  for (var key in item) {
-                    if (item[key] !== null && typeof item[key] === 'object' && "url" in item[key]) {
-                      objectDetails += `<div class="col">${escape(formatKey(key))}: <span class="text-muted">${item[key].display}</span></div>`
-                    }
-                  }
-                  return `<div class="d-flex">
-                        <div class="mb-1">
-                          <p class="h5">${escape(item.display)}</p>
-                          <div class="container">
-                            <div class="row">
-                              ${objectDetails}
-                            </div>
-                          </div>
-                        </div>
-                      </div>`;
-                },
-              },
-              onChange: function (e) {
-                var inputId = this.inputId
-                var key = filters.filter(function (element) { return element.domId == inputId; })[0].key
-                var filterValue = e
-                updateQueryFilters(key, filterValue)
-              }
-            });
-
-            // Add the filter to the list of filters
-            filters.push({ domId: deviceTypeSelectId, url: deviceTypeUrl, key: key })
-          }
-        }
-        // If there are no filters, print a message to the user
-        if (filters.length === 0) {
-          var noFilters = document.createElement('p')
-          noFilters.innerHTML = 'No filters available'
-          document.getElementById('netbox-object-select-filter').appendChild(noFilters)
-        }
-      }
-
-      // Change th list of filters when the object type is changed
-      const changeFilters = () => {
-        var objectTypeSelect = document.getElementById('netbox-object-type-select')
-        var objectType = objectTypeSelect.options[objectTypeSelect.selectedIndex].getAttribute('value')
-
-        // Set the label of the device select to the name of the selected object type
-        var objectLabel = document.getElementById('netbox-object-select-label')
-        var objectTypeLabel = objectTypeSelect.options[objectTypeSelect.selectedIndex].innerHTML
-
-        // Drop the s from the end of the object type name
-        if (objectTypeLabel.endsWith('s')) {
-          objectTypeLabel = objectTypeLabel.slice(0, -1)
-        }
-        objectLabel.innerHTML = `Add ${objectTypeLabel}`
-
-        updateQueryBase(objectType)
-        updateObjectSelect()
-        resetQueryFilters()
-
-        filters = []
-
-        // Clear the netbox-object-select-filter div
-        var objectSelectFilter = document.getElementById('netbox-object-select-filter')
-        objectSelectFilter.innerHTML = ''
-
-        // Get the first object of the selected type from the API
-
-        fetch(`/api/${objectType}/?limit=1`)
-          .then(response => response.json())
-          .then(data => {
-            objectProperties = data.results[0]
-          })
-          .then(() => {
-            createFilterSelect()
-          })
-      }
-
-      changeFilters()
+      changeFilters();
 
       const writeInspector = (ele) => {
         var insp = document.getElementById('nbp-inspector')
@@ -389,13 +140,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      function groupEdges() {
+        const groups = {};
+
+        cy.edges().forEach(edge => {
+          const color = edge.data('color');
+          const label = edge.data('label');
+          const style = edge.data('style');
+
+          let groupKey = `${label}-${color}-${style}`;
+          if (groupKey == `-#999999-solid`) {
+            groupKey = 'default';
+          }
+
+          if (!groups[groupKey]) {
+            groups[groupKey] = [];
+          }
+
+          let group = {
+            color: color,
+            label: label,
+            style: style,
+          }
+
+          groups[groupKey] = group;
+        });
+
+        return groups;
+      }
+
+      const updateAddDropdown = () => {
+        var dropdownMenu = document.getElementById('edge-group-dropdown-menu');
+        dropdownMenu.innerHTML = '';
+
+        const groups = groupEdges();
+
+        Object.entries(groups).forEach(([k, v]) => {
+          var listItem = document.createElement('li');
+
+
+          var dropdownItem = document.createElement('a');
+          dropdownItem.className = 'dropdown-item';
+          dropdownItem.innerText = k;
+
+          dropdownItem.onclick = () => {
+            addNode(k);
+          }
+
+          listItem.appendChild(dropdownItem);
+          dropdownMenu.appendChild(listItem);
+        });
+      }
+
       // Change button text based on the selected node
       const labelButtons = selected => {
         var numSelected = selected.length
 
         if (numSelected > 1) {
           document.getElementById('nbp-add-node').innerHTML = `Add and link to ${numSelected} nodes`
+          updateAddDropdown();
+          document.getElementById('nbp-add-node-dropdown').disabled = false;
           document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete ${numSelected} nodes`
+          document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit`
 
           if (cy.$('node:selected').length > 1) {
             // The link button is only concerned with nodes as opposed to edges
@@ -403,13 +209,19 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
         } else if (numSelected === 1 && selected[0].group() == 'nodes') {
+          document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit Node`
           document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().object.name}`
+          updateAddDropdown();
+          document.getElementById('nbp-add-node-dropdown').disabled = false;
           document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete`
           document.getElementById('nbp-link-selected').innerHTML = 'Link'
-
+        } else if (numSelected === 1 && selected[0].group() == 'edges') {
+          document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit Edge`
         } else {
           // Nothing selected
+          document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit`
           document.getElementById('nbp-add-node').innerHTML = 'Add'
+          document.getElementById('nbp-add-node-dropdown').disabled = true;
           document.getElementById('nbp-delete-selected').innerHTML = '<span class="mdi mdi-trash-can-outline"></span> Delete'
           document.getElementById('nbp-link-selected').innerHTML = 'Link'
         }
@@ -421,6 +233,48 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButtons(selected)
         labelButtons(selected)
       }
+
+      let makePopper = node => {
+        let popoverData = ``;
+        for (var key in node.data('object')) {
+          if (node.data('object').hasOwnProperty(key)) {
+            popoverData += `${key}: ${node.data('object')[key]}</br>`
+          }
+        }
+        let url = node.data('object')['url'].replace("/api/", "/");;
+        popoverData += `</br><div class='d-grid'><button class='btn btn-primary btn-sm' onclick='window.open("${url}", "_blank")'>View in Netbox</button></div>`
+        let ref = node.popperRef();
+        let dummyDomEle = document.createElement("div");
+
+        let tip = tippy(dummyDomEle, {
+          getReferenceClientRect: ref.getBoundingClientRect,
+          trigger: "manual",
+
+          content: () => {
+            let content = document.createElement("div");
+            content.innerHTML = popoverData;
+            return content;
+          },
+
+          interactive: true,
+          interactiveBorder: 100,
+          interactiveDebounce: 1000,
+          duration: [500, 1000],
+          offset: [0, 0],
+          appendTo: document.body,
+        });
+        tippyDict[node.id()] = tip;
+
+        cy.nodes().unbind("mouseover");
+        cy.nodes().bind("mouseover", event => {
+          tippyDict[event.target.id()].show();
+        });
+
+        cy.nodes().unbind("mouseout");
+        cy.nodes().bind("mouseout", event => {
+          tippyDict[event.target.id()].hide();
+        });
+      };
 
       // Initialize the cytojs graph
       const initCytoscape = (graph) => {
@@ -573,9 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
               tpl: function (data) {
                 return `
                   <div class="node">
-                    <span id="${data.id}" onmouseover="$('.popover').remove(); $('#${data.id}').popover('toggle')" onmouseout="$('.popover').remove();" class="node-menu-badge" data-trigger="hover" data-toggle="popover" data-placement="top" title="${data.objLabel}">
-                      <span class="mdi mdi-dots-horizontal-circle-outline icon"></span>
-                    </span>
                     <span class="node-icon rounded-circle">
                       <svg height="30" width="30" viewbox="0 0 18 18">${Array.from(symbols).filter(function (element) { return element.getAttribute('id') == data.icon; })[0].innerHTML}</svg>
                     </span>
@@ -603,6 +454,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         );
 
+        cy.ready(function () {
+          cy.nodes().forEach(node => {
+            makePopper(cy.getElementById(node.data('id')));
+          });
+        });
 
         var defaults = {
           container: '#nbp-navigator',
@@ -622,85 +478,129 @@ document.addEventListener('DOMContentLoaded', () => {
       // var graphP = fetch(netboxPathDataUrl).then(obj => obj.json())
       var fetchPath = fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/`).then(obj => obj.json())
 
+      /*
+      * Default icons for nodes
+      */
+      function chooseIcon(type) {
+        switch (type) {
+          case 'dcim.devices':
+            return '10855-icon-service-module';
+          case 'dcim.interfaces':
+            return '10854-icon-service-media';
+          case 'virtualization.interfaces':
+            return '10245-icon-service-key-vaults';
+          case 'circuits.circuits':
+            return '10079-icon-service-expressroute-circuits';
+          case 'ipam.vlans':
+            return '10853-icon-service-backlog';
+          case 'dcim.racks':
+            return '10852-icon-service-workflow';
+          case 'dcim.regions':
+            return '10851-icon-service-workbooks';
+          case 'dcim.sites':
+            return '10850-icon-service-web-test';
+          case 'tenancy.tenants':
+            return '10849-icon-service-web-slots';
+          case 'virtualization.virtual-machines':
+            return '10848-icon-service-website-staging';
+        }
+      }
+
+      function addNode(groupName) {
+        let group = groupEdges()[groupName];
+
+        if (group === undefined) {
+          group = {
+            color: '#999999',
+            label: '',
+            style: 'solid',
+          }
+        }
+
+        if (selectedObject === undefined) {
+          return;
+        }
+        var added = []
+
+        // Get the selected value from netbox-object-type-select
+        var selectedObjectType = document.getElementById('netbox-object-type-select')
+        var objectUrl = selectedObjectType.options[selectedObjectType.selectedIndex].getAttribute('value')
+        var fetchData = fetch(`/api/${objectUrl}/${selectedObject}/`).then((response) => response.json())
+
+        // Set the label of the device select to the name of the selected object type
+        var objectType = objectUrl.split('/')[1]
+        var objectTypeLabel = formatKey(objectType);
+
+        // Drop the s from the end of the object type name
+        //if (objectTypeLabel.endsWith('s')) {
+        //  objectTypeLabel = objectTypeLabel.slice(0, -1)
+        //}
+        objectTypeLabel = objectUrl.replaceAll('/', '.');
+
+        Promise.all([fetchData]).then(promises => {
+          var deviceData = promises[0]
+
+          // Generate a random id for the new node
+          var id = Math.random().toString(36).substring(7)
+
+          // Create the new node
+          var newNode = {
+            data: {
+              id: id,
+              label: deviceData.display,
+              icon: chooseIcon(objectTypeLabel),
+              object: {
+                id: deviceData.id,
+                type: objectTypeLabel,
+                url: deviceData.url,
+                display: deviceData.display,
+                name: deviceData.name,
+              },
+            },
+          }
+
+          if (cy.$('node:selected').length > 0) {
+            let existing = cy.$('node:selected')[0]
+            // Position the new node near one of the selected nodes
+            // TODO can we do overlap avoidance?
+            newNode.position = {
+              x: existing.position('x') + 200,
+              y: existing.position('y')
+            }
+          }
+
+          // Add the new node
+          added = added.concat(
+            cy.add(newNode)
+          )
+
+          makePopper(cy.getElementById(id));
+
+          // Add an edge between all selected nodes and the new node
+          cy.$('node:selected').forEach(s => {
+            var newEdgeId = `edge-${s.id()}-${id}`
+            if (cy.$id(newEdgeId).length === 0) {
+              console.log("Adding new edge " + newEdgeId)
+              let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: group.label, style: group.style, color: group.color } }
+              added = added.concat(cy.add(edge))
+            }
+          })
+
+          if (added.length > 0) {
+
+            // If we added anything, update stuff
+            // writeNodeSelect()
+            cy.fit()
+          }
+        })
+      }
+
       Promise.all([fetchPath]).then(promises => {
         path = promises[0]
         initCytoscape(path.graph)
 
         document.querySelector('#nbp-add-node').addEventListener('click', () => {
-          var added = []
-          var selectedNameAttributes = {}
-
-          // Get the selected value from netbox-object-type-select
-          var selectedObjectType = document.getElementById('netbox-object-type-select')
-          var objectUrl = selectedObjectType.options[selectedObjectType.selectedIndex].getAttribute('value')
-          var fetchData = fetch(`/api/${objectUrl}/${selectedObject}/`).then((response) => response.json())
-
-          // Set the label of the device select to the name of the selected object type
-          var objectType = objectUrl.split('/')[1]
-          var objectTypeLabel = formatKey(objectType);
-
-          // Drop the s from the end of the object type name
-          //if (objectTypeLabel.endsWith('s')) {
-          //  objectTypeLabel = objectTypeLabel.slice(0, -1)
-          //}
-          objectTypeLabel = objectUrl.replaceAll('/', '.');
-
-          Promise.all([fetchData]).then(promises => {
-            var deviceData = promises[0]
-
-            // Generate a random id for the new node
-            var id = Math.random().toString(36).substring(7)
-
-            // Create the new node
-            var newNode = {
-              data: {
-                id: id,
-                label: deviceData.display,
-                objLabel: deviceData.display,
-                icon: chooseIcon(objectTypeLabel),
-                selectedNameAttributes: selectedNameAttributes,
-                object: {
-                  id: deviceData.id,
-                  type: objectTypeLabel,
-                  url: deviceData.url,
-                  display: deviceData.display,
-                  name: deviceData.name,
-                },
-              },
-            }
-
-            if (cy.$('node:selected').length > 0) {
-              let existing = cy.$('node:selected')[0]
-              // Position the new node near one of the selected nodes
-              // TODO can we do overlap avoidance?
-              newNode.position = {
-                x: existing.position('x') + 200,
-                y: existing.position('y')
-              }
-            }
-
-            // Add the new node
-            added = added.concat(
-              cy.add(newNode)
-            )
-
-            // Add an edge between all selected nodes and the new node
-            cy.$('node:selected').forEach(s => {
-              var newEdgeId = `edge-${s.id()}-${id}`
-              if (cy.$id(newEdgeId).length === 0) {
-                console.log("Adding new edge " + newEdgeId)
-                let edge = { data: { id: newEdgeId, source: s.id(), target: id, label: '', style: 'solid', color: '#999999' } }
-                added = added.concat(cy.add(edge))
-              }
-            })
-
-            if (added.length > 0) {
-
-              // If we added anything, update stuff
-              // writeNodeSelect()
-              cy.fit()
-            }
-          })
+          addNode('default');
         })
 
         // Add listener for the save button
@@ -727,6 +627,8 @@ document.addEventListener('DOMContentLoaded', () => {
           deleteSelectedNodes()
 
         })
+
+        // TODO: Add dropdown for link button
 
         // Add listener for the link button
         document.querySelector('#nbp-link-selected').addEventListener('click', () => {
@@ -873,31 +775,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         })
 
-        function chooseIcon(type) {
-          switch (type) {
-            case 'dcim.devices':
-              return '10855-icon-service-module';
-            case 'dcim.interfaces':
-              return '10854-icon-service-media';
-            case 'virtualization.interfaces':
-              return '10245-icon-service-key-vaults';
-            case 'circuits.circuits':
-              return '10079-icon-service-expressroute-circuits';
-            case 'ipam.vlans':
-              return '10853-icon-service-backlog';
-            case 'dcim.racks':
-              return '10852-icon-service-workflow';
-            case 'dcim.regions':
-              return '10851-icon-service-workbooks';
-            case 'dcim.sites':
-              return '10850-icon-service-web-test';
-            case 'tenancy.tenants':
-              return '10849-icon-service-web-slots';
-            case 'virtualization.virtual-machines':
-              return '10848-icon-service-website-staging';
-          }
-        }
-
         document.getElementById('nbp-node-change-icon-save').addEventListener('click', () => {
           var selected = cy.elements(':selected');
           if (selected.length === 0) {
@@ -920,40 +797,90 @@ document.addEventListener('DOMContentLoaded', () => {
           if (obj.group() == 'nodes') {
             var objectData = obj.data('object')
 
-            // For every key in the objectData, create a checkbox and label
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             modalNodeAttributesSection.innerHTML = ''
+
+            var labelDiv = document.createElement('div');
+            labelDiv.id = `node-label-input-div`;
+            labelDiv.className = 'form-group col-md-12';
+
+            var nodeLabel = document.createElement('label');
+            nodeLabel.innerText = 'Label';
+            nodeLabel.htmlFor = `node-label-input`;
+            labelDiv.appendChild(nodeLabel);
+
+            var labelSelect = document.createElement('select');
+            labelSelect.id = `node-label-input`;
+            labelSelect.className = 'form-select';
+
             for (var key in objectData) {
-              if (objectData[key] === null || objectData[key] === undefined || Object.keys(objectData[key]).length === 0) {
-                continue
+              var option = document.createElement("option");
+              if (obj.data('label') === objectData[key]) {
+                option.selected = true;
               }
-
-              var checkboxDiv = document.createElement('div')
-              checkboxDiv.id = `node-checkbox-${key}`
-              checkboxDiv.className = 'form-check col-md-6'
-
-              var label = document.createElement('label')
-              label.innerText = formatKey(key)
-              label.className = "form-check-label"
-              label.htmlFor = `node-attribute-${key}`
-              checkboxDiv.appendChild(label)
-
-              var checkbox = document.createElement('input')
-              checkbox.type = 'checkbox'
-              checkbox.className = "form-check-input"
-              if (obj.data('selectedNameAttributes')[key] === true) {
-                checkbox.checked = true
-              } else {
-                checkbox.checked = false
-              }
-              checkbox.id = `node-attribute-${key}`
-
-              checkboxDiv.appendChild(checkbox)
-              modalNodeAttributesSection.appendChild(checkboxDiv)
+              option.value = objectData[key];
+              option.text = key;
+              labelSelect.appendChild(option);
             }
+
+            labelDiv.appendChild(labelSelect);
+
+            var descriptionDiv = document.createElement('div');
+            descriptionDiv.id = `node-description-input-div`;
+            descriptionDiv.className = 'form-group col-md-12';
+
+            var descriptionLabel = document.createElement('label');
+            descriptionLabel.innerText = 'Description';
+            descriptionLabel.htmlFor = `node-description-input`;
+            descriptionDiv.appendChild(descriptionLabel);
+
+            var descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.className = 'form-control';
+            descriptionInput.id = `node-description-input`;
+            if (obj.data('description') !== undefined) {
+              descriptionInput.value = obj.data('description');
+            }
+
+            descriptionDiv.appendChild(descriptionInput);
+
+            modalNodeAttributesSection.appendChild(labelDiv);
+            modalNodeAttributesSection.appendChild(descriptionDiv);
           } else if (obj.group() == 'edges') {
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
             modalNodeAttributesSection.innerHTML = ''
+
+            const groups = groupEdges();
+
+            var groupDiv = document.createElement('div');
+            groupDiv.id = `edge-group-input-div`;
+            groupDiv.className = 'form-group col-md-12';
+
+            var groupLabel = document.createElement('label');
+            groupLabel.innerText = 'Group';
+            groupLabel.htmlFor = `edge-group-input`;
+            groupDiv.appendChild(groupLabel);
+
+            var groupSelect = document.createElement('select');
+            groupSelect.id = `edge-group-input`;
+            groupSelect.className = 'form-select';
+
+            var newOption = document.createElement("option");
+            newOption.value = 'new';
+            newOption.text = 'New';
+            groupSelect.appendChild(newOption);
+
+            Object.entries(groups).forEach(([k, v]) => {
+              var option = document.createElement("option");
+              if (obj.data('label') === v.label && obj.data('color') === v.color && obj.data('style') === v.style) {
+                option.selected = true;
+              }
+              option.value = k;
+              option.text = k;
+              groupSelect.appendChild(option);
+            })
+
+            groupDiv.appendChild(groupSelect);
 
             var inputDiv = document.createElement('div');
             inputDiv.id = `edge-label-input-div`;
@@ -976,7 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let options = ['solid', 'dotted', 'dashed'];
 
-
             var typeDiv = document.createElement('div');
             typeDiv.id = `edge-type-input-div`;
             typeDiv.className = 'form-group col-md-12';
@@ -987,6 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
             typeDiv.appendChild(typeLabel);
 
             var typeSelect = document.createElement('select');
+            typeSelect.id = `edge-type-input`;
             typeSelect.className = 'form-select';
 
             for (var i = 0; i < options.length; i++) {
@@ -995,7 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.selected = true;
               }
               option.value = options[i];
-              option.text = options[i];
+              option.text = options[i][0].toUpperCase() + options[i].slice(1);
               typeSelect.appendChild(option);
             }
 
@@ -1041,6 +968,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             colorDiv.appendChild(colorGroup);
 
+            if (groupSelect.value !== 'new') {
+              inputDiv.hidden = true;
+              typeDiv.hidden = true;
+              colorDiv.hidden = true;
+            }
+
+            groupSelect.addEventListener('change', function () {
+              const selectedValue = document.getElementById(`edge-group-input`).value;
+              if (selectedValue === 'new') {
+                inputDiv.hidden = false;
+                typeDiv.hidden = false;
+                colorDiv.hidden = false;
+              } else {
+                inputDiv.hidden = true;
+                typeDiv.hidden = true;
+                colorDiv.hidden = true;
+                const selectedGroup = groups[selectedValue];
+
+                input.value = selectedGroup.label;
+                typeSelect.value = selectedGroup.style;
+                colorPicker.value = selectedGroup.color;
+                colorInput.value = selectedGroup.color;
+              }
+            });
+
+            modalNodeAttributesSection.appendChild(groupDiv);
             modalNodeAttributesSection.appendChild(inputDiv);
             modalNodeAttributesSection.appendChild(typeDiv);
             modalNodeAttributesSection.appendChild(colorDiv);
@@ -1057,40 +1010,21 @@ document.addEventListener('DOMContentLoaded', () => {
           var obj = selected[0]
 
           if (obj.group() == 'nodes') {
-            var objectData = obj.data('object')
-            var selectedNameAttributes = {}
-            var label = ``
-
             // Get the values submitted from the modal
             var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-            var checkboxes = modalNodeAttributesSection.querySelectorAll('.form-check-input')
-            for (var i = 0; i < checkboxes.length; i++) {
-              var checkbox = checkboxes[i]
-              var key = checkbox.id.split('-')[2]
+            var descriptionInput = modalNodeAttributesSection.querySelector('.form-control');
+            var labelType = document.getElementById('node-label-input');
 
-              if (checkbox.checked) {
-                // Check if the objectData is an object
-                if (typeof objectData[key] === 'object') {
-                  if (!objectData[key].display) {
-                    label += `\n${formatKey(key)}: ${objectData[key].label}`
-                  } else {
-                    label += `\n${formatKey(key)}: ${objectData[key].display}`
-                  }
-                } else {
-                  label += `\n${formatKey(key)}: ${objectData[key]}`
-                }
-                selectedNameAttributes[key] = true
-              }
-            }
-            label = label.substring(1);
-            obj.data('objLabel', label)
-            obj.data('selectedNameAttributes', selectedNameAttributes)
+            obj.data('label', labelType.value);
+            obj.data('description', descriptionInput.value);
           } else if (obj.group() == 'edges') {
-            var modalNodeAttributesSection = document.getElementById('node-attributes-to-show')
-            var input = modalNodeAttributesSection.querySelector('.form-control')
-            var typeSelect = modalNodeAttributesSection.querySelector('.form-select');
+            var modalNodeAttributesSection = document.getElementById('node-attributes-to-show');
+
+            var input = modalNodeAttributesSection.querySelector('.form-control');
+            var typeSelect = modalNodeAttributesSection.querySelector('#edge-type-input');
             var colorInput = modalNodeAttributesSection.querySelector('.form-control-color');
             var colorInput = modalNodeAttributesSection.querySelector('.edge-color-input');
+
             obj.data('style', typeSelect.value);
             obj.data('label', input.value)
             obj.data('color', colorInput.value);
@@ -1122,8 +1056,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'If you exit all unsaved data will be lost.';
           }
         });
-
-        $(function () { $('[data-toggle="popover"]').popover() })
       });
     });
 })

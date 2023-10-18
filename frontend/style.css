@@ -57,10 +57,10 @@
   justify-content: center;
   align-items: center;
   border-radius: 3px;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: #ffffff;
-  margin-top: 16px;
+  margin-top: 15px;
   border: 1px solid gray;
 }
 
@@ -75,31 +75,6 @@
   color: black;
   text-transform: uppercase;
   margin-top: 6px;
-}
-
-.node-menu-badge {
-  display: none;
-	position: absolute;
-	width: 15px;
-	height: 15px;
-	border-radius: 50%;
-	margin-left: 32px;
-	margin-top: 12px;
-	box-shadow: 0 0 1px #0000001f,0 1px 1px #0000001f;
-	background: lightgreen;
-	z-index: 999;
-}
-
-.node:hover > .node-menu-badge {
-  display: block;
-}
-
-.node-menu-badge > .icon {
-	color: white;
-	border-radius: 50%;
-	top: -3px;
-	right: -0.5px;
-	position: relative;
 }
 
 /* Tom-Select Styling */
