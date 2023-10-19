@@ -123,11 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('nbp-lock').disabled = true;
           document.getElementById('nbp-unlock').disabled = false;
           document.getElementById('nbp-add-node').disabled = true;
+          document.getElementById('nbp-swap-node').disabled = true;
           document.getElementById('nbp-save').disabled = true;
         } else {
           document.getElementById('nbp-lock').disabled = false;
           document.getElementById('nbp-unlock').disabled = true;
           document.getElementById('nbp-add-node').disabled = false;
+          document.getElementById('nbp-swap-node').disabled = false;
           document.getElementById('nbp-save').disabled = false;
         }
 
@@ -215,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('nbp-add-node-dropdown').disabled = false;
           document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete ${numSelected} nodes`
           document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit`
+          document.getElementById('nbp-swap-node').disabled = true;
 
           if (cy.$('node:selected').length > 1) {
             // The link button is only concerned with nodes as opposed to edges
@@ -224,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (numSelected === 1 && selected[0].group() == 'nodes') {
           document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit Node`
           document.getElementById('nbp-add-node').innerHTML = `Add and link to ${selected[0].data().object.name}`
+          document.getElementById('nbp-swap-node').innerHTML = `Swap ${selected[0].data().object.name}`;
+          document.getElementById('nbp-swap-node').disabled = false;
           updateAddDropdown();
           document.getElementById('nbp-add-node-dropdown').disabled = false;
           document.getElementById('nbp-delete-selected').innerHTML = `<span class="mdi mdi-trash-can-outline"></span> Delete`
@@ -235,6 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('nbp-edit-selected').innerHTML = `<span class="mdi mdi-pencil"></span> Edit`
           document.getElementById('nbp-add-node').innerHTML = 'Add'
           document.getElementById('nbp-add-node-dropdown').disabled = true;
+          document.getElementById('nbp-swap-node').innerHTML = `Swap`;
+          document.getElementById('nbp-swap-node').disabled = true;
           document.getElementById('nbp-delete-selected').innerHTML = '<span class="mdi mdi-trash-can-outline"></span> Delete'
           document.getElementById('nbp-link-selected').innerHTML = 'Link'
         }
@@ -248,14 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let makePopper = node => {
-        let popoverData = ``;
-        for (var key in node.data('object')) {
-          if (node.data('object').hasOwnProperty(key)) {
-            popoverData += `${key}: ${node.data('object')[key]}</br>`
-          }
-        }
-        let url = node.data('object')['url'].replace("/api/", "/");;
-        popoverData += `</br><div class='d-grid'><button class='btn btn-primary btn-sm' onclick='window.open("${url}", "_blank")'>View in Netbox</button></div>`
         let ref = node.popperRef();
         let dummyDomEle = document.createElement("div");
 
@@ -265,6 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
           content: () => {
             let content = document.createElement("div");
+            let popoverData = ``;
+            for (var key in node.data('object')) {
+              if (node.data('object').hasOwnProperty(key)) {
+                popoverData += `${key}: ${node.data('object')[key]}</br>`
+              }
+            }
+            let url = node.data('object')['url'].replace("/api/", "/");;
+            popoverData += `</br><div class='d-grid'><button class='btn btn-primary btn-sm' onclick='window.open("${url}", "_blank")'>View in Netbox</button></div>`
             content.innerHTML = popoverData;
             return content;
           },
@@ -524,6 +531,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      function swapNode() {
+        if (selectedObject === undefined) {
+          return;
+        }
+
+        var selectedObjectType = document.getElementById('netbox-object-type-select')
+        var objectUrl = selectedObjectType.options[selectedObjectType.selectedIndex].getAttribute('value')
+        var fetchData = fetch(`/api/${objectUrl}/${selectedObject}/`).then((response) => response.json())
+
+        // Set the label of the device select to the name of the selected object type
+        var objectType = objectUrl.split('/')[1]
+        var objectTypeLabel = formatKey(objectType);
+
+        // Drop the s from the end of the object type name
+        //if (objectTypeLabel.endsWith('s')) {
+        //  objectTypeLabel = objectTypeLabel.slice(0, -1)
+        //}
+        objectTypeLabel = objectUrl.replaceAll('/', '.');
+
+        Promise.all([fetchData]).then(promises => {
+          var deviceData = promises[0]
+
+          if (cy.$('node:selected').length > 0) {
+            let existing = cy.$('node:selected')[0]
+            existing.data('label', deviceData.display);
+            existing.data('icon', chooseIcon(objectTypeLabel));
+            existing.data('object', {
+              id: deviceData.id,
+              type: objectTypeLabel,
+              url: deviceData.url,
+              display: deviceData.display,
+              name: deviceData.name,
+            });
+
+          }
+        })
+      }
+
       function addNode(groupName) {
         let group = groupEdges()[groupName];
 
@@ -619,6 +664,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelector('#nbp-add-node').addEventListener('click', () => {
           addNode('default');
+        })
+
+        document.querySelector('#nbp-swap-node').addEventListener('click', () => {
+          swapNode();
         })
 
         // Add listener for the save button
