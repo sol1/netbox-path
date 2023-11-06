@@ -10,19 +10,5 @@ demo:
   tags:
     - netbox-path-demo
   script:
-    - cd frontend
-    - npm install
-    - ./build.sh
-    - cd ..
-    - export VERSION=`grep ' version ' netbox_path/__init__.py |awk '{ print $3}'|sed -e "s/'//g"`
-    - python3 setup.py sdist
-    - sudo cp dist/netbox_path-$VERSION.tar.gz /srv/netbox/plugins/
-    - cd /srv/netbox/current 
-    - sudo sh -c "echo 'netbox-path @ file:///srv/netbox/plugins/netbox_path-$VERSION.tar.gz' > /srv/netbox/current/local_requirements.txt"
-    - sudo chown netbox:netbox /srv/netbox/current/local_requirements.txt
-    - sudo ./upgrade.sh
-    - sudo rm -rf venv-py3old
-    - sudo mv venv-py3 venv-py3old
-    - sudo mv venv venv-py3
-    - sudo systemctl restart netbox
+    - whoami
 
