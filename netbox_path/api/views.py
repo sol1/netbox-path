@@ -18,8 +18,17 @@ class PathViewSet(NetBoxModelViewSet):
     queryset = models.Path.objects.prefetch_related('tags')
     serializer_class = PathSerializer
 
-    # Device objects
+    # Image     
+    @action(detail=False, methods=["get", "post"], url_path=r'(?P<pk>[^/.]+)/image')
+    def get_image(self, request, pk=None):
+        print(request)
+        if request.method == "POST":
+            models.Path.objects.filter(pk=pk).update(image=request.data['image'])
+            return Response(status=200)
+        path = models.Path.objects.get(pk=pk)
+        return Response(path.image)
 
+    # Device objects
     @action(detail=False, methods=["get"], url_path=r'dcim/devices/(?P<pk>[^/.]+)')
     def device(self, request, pk=None):
         serializer = PathSerializer(filter_queryset('dcim.devices', pk), many=True, context={'request': request})

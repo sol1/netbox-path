@@ -107,6 +107,25 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Saved', json)
             savedData = cy.json()['elements']
           });
+
+        var navigatorContainer = document.getElementById('nbp-navigator');
+        navigatorContainer.style.display = 'none';
+        cy.fit();
+        html2canvas(document.getElementById('nbp-cy')).then(function (canvas) {
+          var data = canvas.toDataURL();
+          fetch(`/api/plugins/netbox-path/paths/${netboxPathId}/image/`, {
+            method: 'POST',
+            body: JSON.stringify({
+              image: data,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${authToken}`,
+            },
+            credentials: 'omit'
+          })
+        })
+        navigatorContainer.style.display = 'block';
       }
 
       const deleteSelectedNodes = () => {

@@ -15,6 +15,7 @@ class Path(NetBoxModel):
         blank=True,
         null=True
     )
+    image = models.TextField(blank=True)
 
     contacts = GenericRelation(
         to='tenancy.ContactAssignment'
