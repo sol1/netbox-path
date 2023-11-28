@@ -141,27 +141,25 @@ class ImpactAssessment:
         type = object['type']
         id = object['id']
 
-        match type:
-            case 'dcim.devices':
-                return Device.objects.get(pk=id)
-            case 'dcim.interfaces':
-                return Interface.objects.get(pk=id)
-            case 'virtualization.interfaces':
-                return VMInterface.objects.get(pk=id)
-            case 'circuits.circuits':
-                return Circuit.objects.get(pk=id)
-            case 'ipam.vlans':
-                return VLAN.objects.get(pk=id)
-            case 'dcim.racks':
-                return Rack.objects.get(pk=id)
-            case 'dcim.regions':
-                return Region.objects.get(pk=id)
-            case 'dcim.sites':
-                return Site.objects.get(pk=id)
-            case 'tenancy.tenants':
-                return Tenant.objects.get(pk=id)
-            case 'virtualization.virtual-machines':
-                return VirtualMachine.objects.get(pk=id)
-
+        if type == 'dcim.devices':
+            return Device.objects.get(pk=id)
+        elif type == 'dcim.interfaces':
+            return Interface.objects.get(pk=id)
+        elif type == 'virtualization.interfaces':
+            return VMInterface.objects.get(pk=id)
+        elif type == 'circuits.circuits':
+            return Circuit.objects.get(pk=id)
+        elif type == 'ipam.vlans':
+            return VLAN.objects.get(pk=id)
+        elif type == 'dcim.racks':
+            return Rack.objects.get(pk=id)
+        elif type == 'dcim.regions':
+            return Region.objects.get(pk=id)
+        elif type == 'dcim.sites':
+            return Site.objects.get(pk=id)
+        elif type == 'tenancy.tenants':
+            return Tenant.objects.get(pk=id)
+        elif type == 'virtualization.virtual-machines':
+            return VirtualMachine.objects.get(pk=id)
 
 
