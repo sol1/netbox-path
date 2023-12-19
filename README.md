@@ -16,10 +16,12 @@ pushing to that branch will trigger a new deployment for the demo
 * `npm install`
 * `npm run dev`
 
+<!-- This is out of date and inaccessable for now
 ## Docker-based Netbox dev
 
 * See https://gitlab.sol1.net/SOL1/netbox-path-docker
-* `cd frontend && ./build.sh`
+* `cd frontend && ./build.sh` 
+-->
 
 ## To release
 
